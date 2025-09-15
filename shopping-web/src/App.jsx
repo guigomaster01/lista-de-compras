@@ -1,56 +1,61 @@
-// src/App.jsx
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-// Se estiver usando proxy do Vite, deixe '/api'.
-// Caso contrário, use 'http://127.0.0.1:8000'
+// Use '/api' se estiver usando proxy no Vite. Senão, set VITE_API_URL no .env
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 8000,
-  withCredentials: false,
 });
+
+const fmtBRL = (n) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+    Number.isFinite(n) ? n : 0
+  );
 
 export default function App() {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState({ name: "", unit_price: "", quantity: "" });
   const [loadingAdd, setLoadingAdd] = useState(false);
 
-  // estado de edição inline
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ unit_price: "", quantity: "" });
   const [loadingEdit, setLoadingEdit] = useState(false);
 
+  const [error, setError] = useState("");
+
   const fetchItems = async () => {
-    const { data } = await api.get("/items");
-    setItems(data);
+    setError("");
+    try {
+      const { data } = await api.get("/items");
+      setItems(data);
+    } catch (e) {
+      setError("Não foi possível carregar os itens.");
+    }
   };
 
   useEffect(() => {
     fetchItems();
   }, []);
 
-  const total = useMemo(() => {
-    return items.reduce((acc, it) => acc + it.total, 0);
-  }, [items]);
+  const total = useMemo(
+    () => items.reduce((acc, it) => acc + it.total, 0),
+    [items]
+  );
 
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-
     setLoadingAdd(true);
+    setError("");
     try {
       const body = { name: form.name.trim() };
-
-      if (form.unit_price !== "") {
-        body.unit_price = parseFloat(form.unit_price);
-      }
-      if (form.quantity !== "") {
-        body.quantity = parseInt(form.quantity);
-      }
-
+      if (form.unit_price !== "") body.unit_price = parseFloat(form.unit_price);
+      if (form.quantity !== "") body.quantity = parseInt(form.quantity);
       await api.post("/items", body);
       setForm({ name: "", unit_price: "", quantity: "" });
       await fetchItems();
+    } catch (e) {
+      setError("Falha ao adicionar item.");
     } finally {
       setLoadingAdd(false);
     }
@@ -71,172 +76,227 @@ export default function App() {
 
   const saveEdit = async (id) => {
     setLoadingEdit(true);
+    setError("");
     try {
       const body = {};
-      if (editForm.unit_price !== "") {
+      if (editForm.unit_price !== "")
         body.unit_price = parseFloat(editForm.unit_price);
-      }
-      if (editForm.quantity !== "") {
+      if (editForm.quantity !== "")
         body.quantity = parseInt(editForm.quantity);
-      }
-      // Se nada mudou, não manda patch
-      if (Object.keys(body).length === 0) {
-        cancelEdit();
-        return;
-      }
+      if (Object.keys(body).length === 0) return cancelEdit();
       await api.patch(`/items/${id}`, body);
       await fetchItems();
       cancelEdit();
+    } catch (e) {
+      setError("Falha ao salvar alterações.");
     } finally {
       setLoadingEdit(false);
     }
   };
 
   const removeItem = async (id) => {
-    await api.delete(`/items/${id}`);
-    await fetchItems();
+    setError("");
+    try {
+      await api.delete(`/items/${id}`);
+      await fetchItems();
+    } catch {
+      setError("Falha ao remover item.");
+    }
   };
 
   const updateQtyQuick = async (id, nextQty) => {
     if (nextQty < 1) return;
-    await api.patch(`/items/${id}`, { quantity: nextQty });
-    await fetchItems();
+    setError("");
+    try {
+      await api.patch(`/items/${id}`, { quantity: nextQty });
+      await fetchItems();
+    } catch {
+      setError("Falha ao atualizar quantidade.");
+    }
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: 16 }}>
-      <h1>Lista de Compras</h1>
+    <div className="min-h-dvh bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-neutral-100">
+      <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-900/60 bg-white/80 dark:bg-neutral-900/80 border-b border-black/5 dark:border-white/10">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-xl font-semibold tracking-tight">Lista de Compras</h1>
+          <span className="text-sm text-gray-500 dark:text-neutral-400">
+            {items.length} itens
+          </span>
+        </div>
+      </header>
 
-      {/* Formulário de adição (preço/quantidade opcionais) */}
-      <form
-        onSubmit={onSubmit}
-        style={{
-          display: "grid",
-          gap: 8,
-          gridTemplateColumns: "1fr 140px 120px 140px",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <input
-          placeholder="Nome do item (obrigatório)"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-        />
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="Preço (R$) opcional"
-          value={form.unit_price}
-          onChange={(e) => setForm({ ...form, unit_price: e.target.value })}
-        />
-        <input
-          type="number"
-          min="1"
-          placeholder="Qtd (opcional)"
-          value={form.quantity}
-          onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-        />
-        <button disabled={loadingAdd}>
-          {loadingAdd ? "Adicionando..." : "Adicionar"}
-        </button>
-      </form>
-
-      {/* Lista */}
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {items.map((it) => {
-          const isEditing = editingId === it.id;
-          return (
-            <li
-              key={it.id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 140px 160px 220px",
-                gap: 8,
-                alignItems: "center",
-                padding: "10px 0",
-                borderBottom: "1px solid #eee",
-              }}
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+        {/* Card do formulário */}
+        <section className="bg-white dark:bg-neutral-800 border border-black/5 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+          <h2 className="text-base font-medium mb-3">Adicionar item</h2>
+          <form
+            onSubmit={onSubmit}
+            className="grid gap-3 md:grid-cols-[1fr,160px,120px,120px] items-start"
+          >
+            <input
+              className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Nome do item (obrigatório)"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Preço (R$) opcional"
+              value={form.unit_price}
+              onChange={(e) => setForm({ ...form, unit_price: e.target.value })}
+            />
+            <input
+              type="number"
+              min="1"
+              className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Qtd (opcional)"
+              value={form.quantity}
+              onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+            />
+            <button
+              disabled={loadingAdd}
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white px-4 py-2 font-medium transition-colors"
             >
-              {/* Nome do item */}
-              <div>
-                <strong>{it.name}</strong>
-              </div>
+              {loadingAdd ? "Adicionando..." : "Adicionar"}
+            </button>
+          </form>
+          {error && (
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
+        </section>
 
-              {/* Preço unitário */}
-              <div>
-                {isEditing ? (
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={editForm.unit_price}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, unit_price: e.target.value })
-                    }
-                    placeholder="Preço (R$)"
-                  />
-                ) : (
-                  <span>R$ {it.unit_price.toFixed(2)}</span>
-                )}
-              </div>
+        {/* Lista */}
+        <section className="space-y-2">
+          {items.length === 0 && (
+            <div className="text-sm text-gray-500 dark:text-neutral-400 text-center py-8">
+              Nenhum item por enquanto. Adicione acima 👆
+            </div>
+          )}
+          {items.map((it) => {
+            const isEditing = editingId === it.id;
+            return (
+              <article
+                key={it.id}
+                className="bg-white dark:bg-neutral-800 border border-black/5 dark:border-white/10 rounded-2xl p-4 shadow-sm hover:shadow transition-shadow"
+              >
+                <div className="grid gap-3 md:grid-cols-[1fr,160px,170px,1fr] md:items-center">
+                  {/* Nome */}
+                  <div className="min-w-0">
+                    <h3 className="font-medium truncate">{it.name}</h3>
+                    <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
+                      Total do item: <strong>{fmtBRL(it.total)}</strong>
+                    </p>
+                  </div>
 
-              {/* Quantidade (com atalho +/- quando não está editando) */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {isEditing ? (
-                  <input
-                    type="number"
-                    min="1"
-                    value={editForm.quantity}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, quantity: e.target.value })
-                    }
-                    placeholder="Qtd"
-                    style={{ width: 80 }}
-                  />
-                ) : (
-                  <>
-                    <button onClick={() => updateQtyQuick(it.id, it.quantity - 1)}>
-                      -
-                    </button>
-                    <span>{it.quantity}</span>
-                    <button onClick={() => updateQtyQuick(it.id, it.quantity + 1)}>
-                      +
-                    </button>
-                  </>
-                )}
-              </div>
+                  {/* Preço unitário */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 dark:text-neutral-400">Preço</span>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editForm.unit_price}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, unit_price: e.target.value })
+                        }
+                        className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="R$ 0,00"
+                      />
+                    ) : (
+                      <span className="font-medium">{fmtBRL(it.unit_price)}</span>
+                    )}
+                  </div>
 
-              {/* Total + ações */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ minWidth: 100, textAlign: "right" }}>
-                  R$ {it.total.toFixed(2)}
-                </span>
+                  {/* Quantidade */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 dark:text-neutral-400">Qtd</span>
+                    {isEditing ? (
+                      <input
+                        type="number"
+                        min="1"
+                        value={editForm.quantity}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, quantity: e.target.value })
+                        }
+                        className="w-24 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="1"
+                      />
+                    ) : (
+                      <div className="inline-flex items-center gap-2">
+                        <button
+                          onClick={() => updateQtyQuick(it.id, it.quantity - 1)}
+                          className="h-8 w-8 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
+                          title="Diminuir"
+                        >
+                          −
+                        </button>
+                        <span className="min-w-6 text-center">{it.quantity}</span>
+                        <button
+                          onClick={() => updateQtyQuick(it.id, it.quantity + 1)}
+                          className="h-8 w-8 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
+                          title="Aumentar"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-                {isEditing ? (
-                  <>
-                    <button onClick={() => saveEdit(it.id)} disabled={loadingEdit}>
-                      {loadingEdit ? "Salvando..." : "Salvar"}
-                    </button>
-                    <button onClick={cancelEdit}>Cancelar</button>
-                  </>
-                ) : (
-                  <>
-                    <button onClick={() => startEdit(it)}>Editar</button>
-                    <button onClick={() => removeItem(it.id)}>Remover</button>
-                  </>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+                  {/* Ações */}
+                  <div className="flex justify-end gap-2">
+                    {isEditing ? (
+                      <>
+                        <button
+                          onClick={() => saveEdit(it.id)}
+                          className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm font-medium"
+                          disabled={loadingEdit}
+                        >
+                          {loadingEdit ? "Salvando..." : "Salvar"}
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="rounded-xl border border-black/10 dark:border-white/10 px-4 py-2 text-sm"
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => startEdit(it)}
+                          className="rounded-xl border border-black/10 dark:border-white/10 px-4 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => removeItem(it.id)}
+                          className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-sm"
+                        >
+                          Remover
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      </main>
 
-      <h2 style={{ textAlign: "right", marginTop: 16 }}>
-        Total: R$ {total.toFixed(2)}
-      </h2>
+      {/* Total fixo no rodapé */}
+      <footer className="sticky bottom-0 border-t border-black/5 dark:border-white/10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-gray-500 dark:text-neutral-400">Total da compra</span>
+          <span className="text-lg font-semibold">{fmtBRL(total)}</span>
+        </div>
+      </footer>
     </div>
   );
 }

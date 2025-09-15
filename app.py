@@ -1,4 +1,6 @@
-# app.py
+# uvicorn app:app --host 127.0.0.1 --port 8000 --reload
+# ou
+# uvicorn mini:app --host 127.0.0.1 --port 8000 --reload  
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
