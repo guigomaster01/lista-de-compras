@@ -320,7 +320,7 @@ lista-de-compras/
 
 ## 12) Licença
 
-Defina a licença do projeto (MIT/Apache-2.0/etc.) conforme sua preferência.
+Ainda estou pensando em que tipo de licença utilizar (rindo de nervoso)
 
 ---
 
