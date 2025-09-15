@@ -65,37 +65,6 @@ class ItemUpdate(BaseModel):
             return v
         return round(float(v), 2)
 
-
-# class ItemCreate(BaseModel):
-#     name: str = Field(..., min_length=1, max_length=100)
-#     unit_price: float = Field(..., gt=0)  # em reais
-#     quantity: int = Field(..., ge=1)
-#     done: bool = False
-
-#     @validator("unit_price")
-#     def two_decimals(cls, v):
-#         return round(float(v), 2)
-
-# class ItemUpdate(BaseModel):
-#     name: Optional[str] = Field(None, min_length=1, max_length=100)
-#     unit_price: Optional[float] = Field(None, gt=0)  # em reais
-#     quantity: Optional[int] = Field(None, ge=1)
-#     done: Optional[bool] = None
-
-#     @validator("unit_price")
-#     def two_decimals(cls, v):
-#         if v is None:
-#             return v
-#         return round(float(v), 2)
-
-# class ItemOut(BaseModel):
-#     id: str
-#     name: str
-#     unit_price: float
-#     quantity: int
-#     total: float
-#     done: bool
-
 # -----------------------
 # App & CORS
 # -----------------------
@@ -161,22 +130,6 @@ async def create_item(payload: ItemCreate):
     res = await items_col.insert_one(doc)
     inserted = await items_col.find_one({"_id": res.inserted_id})
     return ItemOut(**doc_to_out(inserted))
-
-# @app.post("/items", response_model=ItemOut, status_code=status.HTTP_201_CREATED)
-# async def create_item(payload: ItemCreate):
-#     name = payload.name.strip()
-#     if not name:
-#         raise HTTPException(400, "Name cannot be empty")
-
-#     doc = {
-#         "name": name,
-#         "unit_price_cents": to_cents(payload.unit_price),
-#         "quantity": payload.quantity,
-#         "done": bool(payload.done),
-#     }
-#     res = await items_col.insert_one(doc)
-#     inserted = await items_col.find_one({"_id": res.inserted_id})
-#     return ItemOut(**doc_to_out(inserted))
 
 @app.patch("/items/{item_id}", response_model=ItemOut)
 async def update_item(item_id: str, payload: ItemUpdate):
