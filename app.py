@@ -73,7 +73,7 @@ class ItemUpdate(BaseModel):
 app = FastAPI(title="Shopping List API")
 
 origins = [
-    "*",  # permitir todas as origens (dev only; em produção, especifique o front-end exato)
+    "https://lista-de-compras-ten-hazel.vercel.app",  # permitir todas as origens (dev only; em produção, especifique o front-end exato)
 ]
 app.add_middleware(
     CORSMiddleware,
