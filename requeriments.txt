@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
-python-dotenv
-pydantic
 motor
+dnspython
+pydantic
+python-dotenv
