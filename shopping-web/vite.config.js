@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: process.env.VITE_BASE_PATH || "/lista-de-compras",
+  base: process.env.VITE_BASE_PATH || "/",
   server: {
     host: true,       // para acessar via rede local
     port: 5173,       // se quer travar nessa porta
