@@ -73,11 +73,7 @@ class ItemUpdate(BaseModel):
 app = FastAPI(title="Shopping List API")
 
 origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "http://192.168.0.212:5173",  # exemplo de IP local
+    "*",  # permitir todas as origens (dev only; em produção, especifique o front-end exato)
 ]
 app.add_middleware(
     CORSMiddleware,
