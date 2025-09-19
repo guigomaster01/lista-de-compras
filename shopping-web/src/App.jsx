@@ -1,12 +1,6 @@
+// src/App.jsx
 import { useEffect, useMemo, useState } from "react";
-// import axios from "axios"; 
-// Axios apenas necessário se for fazer requisições HTTP
-
-// Use '/api' se estiver usando proxy no Vite. Senão, set VITE_API_URL no .env
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/api",
-  timeout: 8000,
-});
+import { getStore } from "./storage"; // <<-- use o index que retorna local/http conforme modo
 
 const fmtBRL = (n) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
@@ -14,6 +8,11 @@ const fmtBRL = (n) =>
   );
 
 export default function App() {
+  // modo persiste no localStorage; default "local"
+  const [mode, setMode] = useState(() => localStorage.getItem("shopping.mode") || "local");
+  const [modeLoaded, setModeLoaded] = useState(false);
+  const store = useMemo(() => getStore(mode), [mode]); // provider local OU http
+
   const [items, setItems] = useState([]);
   const [form, setForm] = useState({ name: "", unit_price: "", quantity: "" });
   const [loadingAdd, setLoadingAdd] = useState(false);
@@ -24,22 +23,34 @@ export default function App() {
 
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    localStorage.setItem("shopping.mode", mode);
+  }, [mode]);
+
+  useEffect(() => {
+    setModeLoaded(true);
+  }, []);
+
   const fetchItems = async () => {
     setError("");
     try {
-      const { data } = await api.get("/items");
-      setItems(data);
+      const data = await store.list();
+      setItems(Array.isArray(data) ? data : []);
     } catch (e) {
+      console.error(e);
+      setItems([]);
       setError("Não foi possível carregar os itens.");
     }
   };
 
   useEffect(() => {
+    if (!modeLoaded) return;
     fetchItems();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, store, modeLoaded]);
 
   const total = useMemo(
-    () => items.reduce((acc, it) => acc + it.total, 0),
+    () => (Array.isArray(items) ? items.reduce((acc, it) => acc + (Number(it.total) || 0), 0) : 0),
     [items]
   );
 
@@ -52,10 +63,11 @@ export default function App() {
       const body = { name: form.name.trim() };
       if (form.unit_price !== "") body.unit_price = parseFloat(form.unit_price);
       if (form.quantity !== "") body.quantity = parseInt(form.quantity);
-      await api.post("/items", body);
+      await store.create(body);           // <<-- provider
       setForm({ name: "", unit_price: "", quantity: "" });
       await fetchItems();
     } catch (e) {
+      console.error(e);
       setError("Falha ao adicionar item.");
     } finally {
       setLoadingAdd(false);
@@ -79,16 +91,16 @@ export default function App() {
     setLoadingEdit(true);
     setError("");
     try {
-      const body = {};
-      if (editForm.unit_price !== "")
-        body.unit_price = parseFloat(editForm.unit_price);
-      if (editForm.quantity !== "")
-        body.quantity = parseInt(editForm.quantity);
-      if (Object.keys(body).length === 0) return cancelEdit();
-      await api.patch(`/items/${id}`, body);
+      const patch = {};
+      if (editForm.unit_price !== "") patch.unit_price = parseFloat(editForm.unit_price);
+      if (editForm.quantity !== "") patch.quantity = parseInt(editForm.quantity);
+      if (Object.keys(patch).length === 0) return cancelEdit();
+
+      await store.patch(id, patch);       // <<-- provider
       await fetchItems();
       cancelEdit();
     } catch (e) {
+      console.error(e);
       setError("Falha ao salvar alterações.");
     } finally {
       setLoadingEdit(false);
@@ -98,7 +110,7 @@ export default function App() {
   const removeItem = async (id) => {
     setError("");
     try {
-      await api.delete(`/items/${id}`);
+      await store.remove(id);             // <<-- provider
       await fetchItems();
     } catch {
       setError("Falha ao remover item.");
@@ -109,7 +121,7 @@ export default function App() {
     if (nextQty < 1) return;
     setError("");
     try {
-      await api.patch(`/items/${id}`, { quantity: nextQty });
+      await store.patch(id, { quantity: nextQty }); // <<-- provider
       await fetchItems();
     } catch {
       setError("Falha ao atualizar quantidade.");
@@ -119,8 +131,22 @@ export default function App() {
   return (
     <div className="min-h-dvh bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-neutral-100">
       <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-900/60 bg-white/80 dark:bg-neutral-900/80 border-b border-black/5 dark:border-white/10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <h1 className="text-xl font-semibold tracking-tight">Lista de Compras</h1>
+
+          {/* Toggle Local/Nuvem */}
+          <div className="text-sm flex items-center gap-2">
+            <label className="font-medium">Salvar em:</label>
+            <select
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-2 py-1"
+            >
+              <option value="local">Meu dispositivo (local)</option>
+              <option value="api">Nuvem (minha conta)</option>
+            </select>
+          </div>
+
           <span className="text-sm text-gray-500 dark:text-neutral-400">
             {items.length} itens
           </span>
