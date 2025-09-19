@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+// import axios from "axios"; 
+// Axios apenas necessário se for fazer requisições HTTP
 
 // Use '/api' se estiver usando proxy no Vite. Senão, set VITE_API_URL no .env
 const api = axios.create({
