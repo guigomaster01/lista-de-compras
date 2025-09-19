@@ -130,7 +130,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-gray-50 text-gray-900">
-      <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-900/60 bg-white/80 dark:bg-neutral-900/80 border-b border-black/5 dark:border-white/10">
+      <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 ">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <h1 className="text-xl font-semibold tracking-tight">Lista de Compras</h1>
 
@@ -140,14 +140,14 @@ export default function App() {
             <select
               value={mode}
               onChange={(e) => setMode(e.target.value)}
-              className="rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-2 py-1"
+              className="rounded-lg border border-black/10"
             >
               <option value="local">Meu dispositivo (local)</option>
               <option value="api">Nuvem (minha conta)</option>
             </select>
           </div>
 
-          <span className="text-sm text-gray-500 dark:text-neutral-400">
+          <span className="text-sm text-gray-500">
             {items.length} itens
           </span>
         </div>
@@ -155,14 +155,14 @@ export default function App() {
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Card do formulário */}
-        <section className="bg-white dark:bg-neutral-800 border border-black/5 dark:border-white/10 rounded-2xl p-4 shadow-sm">
+        <section className="bg-white">
           <h2 className="text-base font-medium mb-3">Adicionar item</h2>
           <form
             onSubmit={onSubmit}
             className="grid gap-3 md:grid-cols-[1fr,160px,120px,120px] items-start"
           >
             <input
-              className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-xl border border-black/10"
               placeholder="Nome do item (obrigatório)"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -172,7 +172,7 @@ export default function App() {
               type="number"
               step="0.01"
               min="0"
-              className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="rounded-xl border border-black/10"
               placeholder="Preço (R$) opcional"
               value={form.unit_price}
               onChange={(e) => setForm({ ...form, unit_price: e.target.value })}
@@ -180,7 +180,7 @@ export default function App() {
             <input
               type="number"
               min="1"
-              className="rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              className="rounded-xl border border-black/10"
               placeholder="Qtd (opcional)"
               value={form.quantity}
               onChange={(e) => setForm({ ...form, quantity: e.target.value })}
@@ -193,14 +193,14 @@ export default function App() {
             </button>
           </form>
           {error && (
-            <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="mt-3 text-sm text-red-600">{error}</p>
           )}
         </section>
 
         {/* Lista */}
         <section className="space-y-2">
           {items.length === 0 && (
-            <div className="text-sm text-gray-500 dark:text-neutral-400 text-center py-8">
+            <div className="text-sm text-gray-500">
               Nenhum item por enquanto. Adicione acima 👆
             </div>
           )}
@@ -209,20 +209,20 @@ export default function App() {
             return (
               <article
                 key={it.id}
-                className="bg-white dark:bg-neutral-800 border border-black/5 dark:border-white/10 rounded-2xl p-4 shadow-sm hover:shadow transition-shadow"
+                className="bg-white"
               >
                 <div className="grid gap-3 md:grid-cols-[1fr,160px,170px,1fr] md:items-center">
                   {/* Nome */}
                   <div className="min-w-0">
                     <h3 className="font-medium truncate">{it.name}</h3>
-                    <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
+                    <p className="text-xs text-gray-500">
                       Total do item: <strong>{fmtBRL(it.total)}</strong>
                     </p>
                   </div>
 
                   {/* Preço unitário */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-neutral-400">Preço</span>
+                    <span className="text-xs text-gray-500">Preço</span>
                     {isEditing ? (
                       <input
                         type="number"
@@ -232,7 +232,7 @@ export default function App() {
                         onChange={(e) =>
                           setEditForm({ ...editForm, unit_price: e.target.value })
                         }
-                        className="w-full rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full rounded-xl border border-black/10"
                         placeholder="R$ 0,00"
                       />
                     ) : (
@@ -242,7 +242,7 @@ export default function App() {
 
                   {/* Quantidade */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-neutral-400">Qtd</span>
+                    <span className="text-xs text-gray-500">Qtd</span>
                     {isEditing ? (
                       <input
                         type="number"
@@ -251,14 +251,14 @@ export default function App() {
                         onChange={(e) =>
                           setEditForm({ ...editForm, quantity: e.target.value })
                         }
-                        className="w-24 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-24 rounded-xl border border-black/10"
                         placeholder="1"
                       />
                     ) : (
                       <div className="inline-flex items-center gap-2">
                         <button
                           onClick={() => updateQtyQuick(it.id, it.quantity - 1)}
-                          className="h-8 w-8 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
+                          className="h-8 w-8 rounded-lg border border-black/10"
                           title="Diminuir"
                         >
                           −
@@ -266,7 +266,7 @@ export default function App() {
                         <span className="min-w-6 text-center">{it.quantity}</span>
                         <button
                           onClick={() => updateQtyQuick(it.id, it.quantity + 1)}
-                          className="h-8 w-8 rounded-lg border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
+                          className="h-8 w-8 rounded-lg border border-black/10"
                           title="Aumentar"
                         >
                           +
@@ -288,7 +288,7 @@ export default function App() {
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="rounded-xl border border-black/10 dark:border-white/10 px-4 py-2 text-sm"
+                          className="rounded-xl border border-black/10 px-4 py-2 text-sm"
                         >
                           Cancelar
                         </button>
@@ -297,7 +297,7 @@ export default function App() {
                       <>
                         <button
                           onClick={() => startEdit(it)}
-                          className="rounded-xl border border-black/10 dark:border-white/10 px-4 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+                          className="rounded-xl border border-black/10"
                         >
                           Editar
                         </button>
@@ -318,9 +318,9 @@ export default function App() {
       </main>
 
       {/* Total fixo no rodapé */}
-      <footer className="sticky bottom-0 border-t border-black/5 dark:border-white/10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur">
+      <footer className="sticky bottom-0 border-t border-black/5 ">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <span className="text-sm text-gray-500 dark:text-neutral-400">Total da compra</span>
+          <span className="text-sm text-gray-500 ">Total da compra</span>
           <span className="text-lg font-semibold">{fmtBRL(total)}</span>
         </div>
       </footer>
