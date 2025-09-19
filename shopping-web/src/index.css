@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: light dark;
-}
-
 html, body, #root {
   height: 100%;
 }
@@ -39,7 +35,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a92;
+  background-color: #bc00fa92;
   cursor: pointer;
   transition: border-color 0.25s;
 }
