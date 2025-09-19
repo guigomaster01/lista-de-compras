@@ -129,7 +129,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-dvh bg-gray-50 text-gray-900">
+    <div className="min-h-dvh bg-gray-50 text-gray-900 dark:bg-neutral-900 dark:text-neutral-100">
       <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-900/60 bg-white/80 dark:bg-neutral-900/80 border-b border-black/5 dark:border-white/10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <h1 className="text-xl font-semibold tracking-tight">Lista de Compras</h1>
