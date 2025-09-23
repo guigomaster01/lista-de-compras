@@ -7,63 +7,55 @@ const fmtBRL = (n) =>
     .format(Number.isFinite(n) ? n : 0);
 
 export default function App() {
-  // ---------- Modo de armazenamento ----------
-  const [mode, setMode] = useState(() => localStorage.getItem("shopping.mode") || "local");
-  const [modeLoaded, setModeLoaded] = useState(false);
+  // ---------- Armazenamento ----------
+  const [mode] = useState(() => localStorage.getItem("shopping.mode") || "local");
   const store = useMemo(() => getStore(mode), [mode]);
 
-  // ---------- Modo compacto (para telas pequenas) ----------
-  const [compact, setCompact] = useState(() => localStorage.getItem("shopping.compact") === "1");
-  const sz = useMemo(() => {
-    // classes que mudam conforme compacto
-    return compact
-      ? {
-          headerPy: "py-2",
-          sectionPad: "p-3",
-          cardPad: "p-3",
-          gap: "gap-2",
-          inputH: "h-9",
-          btnH: "h-9",
-          btnPadX: "px-3",
-          textBase: "text-sm",
-          textSmall: "text-xs",
-        }
-      : {
-          headerPy: "py-3",
-          sectionPad: "p-4",
-          cardPad: "p-4",
-          gap: "gap-3",
-          inputH: "h-10",
-          btnH: "h-10",
-          btnPadX: "px-4",
-          textBase: "text-sm",
-          textSmall: "text-xs",
-        };
-  }, [compact]);
+  // ---------- Modo compacto ----------
+  const [compact, setCompact] = useState(
+    () => localStorage.getItem("shopping.compact") === "1"
+  );
+  const sz = useMemo(
+    () =>
+      compact
+        ? {
+            headerPy: "py-2",
+            sectionPad: "p-3",
+            cardPad: "p-3",
+            gap: "gap-2",
+            inputH: "h-9",
+            btnH: "h-9",
+            btnPadX: "px-3",
+            textBase: "text-sm",
+            textSmall: "text-xs",
+          }
+        : {
+            headerPy: "py-3",
+            sectionPad: "p-4",
+            cardPad: "p-4",
+            gap: "gap-3",
+            inputH: "h-10",
+            btnH: "h-10",
+            btnPadX: "px-4",
+            textBase: "text-sm",
+            textSmall: "text-xs",
+          },
+    [compact]
+  );
 
-  // ---------- Estado da lista / formulários ----------
+  // ---------- Estado ----------
   const [items, setItems] = useState([]);
   const [form, setForm] = useState({ name: "", unit_price: "", quantity: "" });
-  const [loadingAdd, setLoadingAdd] = useState(false);
-
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ unit_price: "", quantity: "" });
+  const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
-
   const [error, setError] = useState("");
 
-  // ---------- Persistência de preferências ----------
-  useEffect(() => {
-    localStorage.setItem("shopping.mode", mode);
-  }, [mode]);
-
+  // ---------- Preferências ----------
   useEffect(() => {
     localStorage.setItem("shopping.compact", compact ? "1" : "0");
   }, [compact]);
-
-  useEffect(() => {
-    setModeLoaded(true);
-  }, []);
 
   // ---------- Data loading ----------
   const fetchItems = async () => {
@@ -79,13 +71,14 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!modeLoaded) return;
     fetchItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, store, modeLoaded]);
+  }, [store]);
 
   const total = useMemo(
-    () => (Array.isArray(items) ? items.reduce((acc, it) => acc + (Number(it.total) || 0), 0) : 0),
+    () =>
+      Array.isArray(items)
+        ? items.reduce((acc, it) => acc + (Number(it.total) || 0), 0)
+        : 0,
     [items]
   );
 
@@ -97,7 +90,7 @@ export default function App() {
     setError("");
     try {
       const body = { name: form.name.trim() };
-      if (form.unit_price !== "") body.unit_price = parseFloat(form.unit_price);
+      if (form.unit_price !== "") body.unit_price = Number(form.unit_price);
       if (form.quantity !== "") body.quantity = parseInt(form.quantity);
       await store.create(body);
       setForm({ name: "", unit_price: "", quantity: "" });
@@ -128,9 +121,9 @@ export default function App() {
     setError("");
     try {
       const patch = {};
-      if (editForm.unit_price !== "") patch.unit_price = parseFloat(editForm.unit_price);
+      if (editForm.unit_price !== "") patch.unit_price = Number(editForm.unit_price);
       if (editForm.quantity !== "") patch.quantity = parseInt(editForm.quantity);
-      if (Object.keys(patch).length === 0) return cancelEdit();
+      if (!Object.keys(patch).length) return cancelEdit();
 
       await store.patch(id, patch);
       await fetchItems();
@@ -166,7 +159,7 @@ export default function App() {
     }
   };
 
-  // ---------- Classes utilitárias ----------
+  // ---------- Utilitários de UI ----------
   const inputClass = `${sz.inputH} w-full rounded-xl border border-black/10 px-3 ${sz.textBase} outline-none focus:ring-2 focus:ring-indigo-500`;
   const btnPrimary = `${sz.btnH} rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white ${sz.btnPadX} ${sz.textBase} font-medium transition-colors`;
   const btnGhost = `${sz.btnH} rounded-xl border border-black/10 ${sz.btnPadX} ${sz.textBase} hover:bg-black/5 transition-colors`;
@@ -176,23 +169,14 @@ export default function App() {
     <div className="min-h-dvh bg-gray-50 text-gray-900">
       {/* HEADER */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-black/5">
-        <div className={`max-w-3xl mx-auto px-4 ${sz.headerPy} flex items-center justify-between gap-3`}>
-          <h1 className="text-lg md:text-xl font-semibold tracking-tight">Lista de Compras</h1>
+        <div
+          className={`max-w-3xl mx-auto px-4 ${sz.headerPy} flex items-center justify-between gap-3`}
+        >
+          <h1 className="text-lg md:text-xl font-semibold tracking-tight">
+            Lista de Compras
+          </h1>
 
-          {/* Toggle Local/Nuvem + Compacto */}
           <div className="flex items-center gap-3">
-            <div className="text-sm flex items-center gap-2">
-              <label className="font-medium">Salvar em:</label>
-              <select
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
-                className={`h-9 rounded-lg border border-black/10 px-2 ${sz.textBase} outline-none focus:ring-2 focus:ring-indigo-500`}
-              >
-                <option value="local">Meu dispositivo (local)</option>
-                <option value="api">Nuvem (minha conta)</option>
-              </select>
-            </div>
-
             <label className="text-sm flex items-center gap-2">
               <input
                 type="checkbox"
@@ -213,7 +197,9 @@ export default function App() {
       {/* MAIN */}
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-5">
         {/* FORM */}
-        <section className={`bg-white border border-black/5 rounded-2xl ${sz.sectionPad} shadow-sm`}>
+        <section
+          className={`bg-white border border-black/5 rounded-2xl ${sz.sectionPad} shadow-sm`}
+        >
           <h2 className="text-base font-medium mb-2">Adicionar item</h2>
           <form
             onSubmit={onSubmit}
@@ -247,15 +233,15 @@ export default function App() {
               {loadingAdd ? "Adicionando..." : "Adicionar"}
             </button>
           </form>
-          {error && (
-            <p className={`mt-2 ${sz.textBase} text-red-600`}>{error}</p>
-          )}
+          {error && <p className={`mt-2 ${sz.textBase} text-red-600`}>{error}</p>}
         </section>
 
         {/* LISTA */}
         <section className="space-y-2">
           {items.length === 0 && (
-            <div className={`text-center ${sz.textBase} text-gray-500 border border-dashed border-black/10 rounded-xl bg-white ${sz.sectionPad}`}>
+            <div
+              className={`text-center ${sz.textBase} text-gray-500 border border-dashed border-black/10 rounded-xl bg-white ${sz.sectionPad}`}
+            >
               Nenhum item por enquanto. Adicione acima 👆
             </div>
           )}
@@ -267,7 +253,9 @@ export default function App() {
                 key={it.id}
                 className={`bg-white border border-black/5 rounded-2xl ${sz.cardPad} shadow-sm hover:shadow transition-shadow`}
               >
-                <div className={`grid grid-cols-1 ${sz.gap} md:grid-cols-[1fr,160px,170px,1fr] md:items-center`}>
+                <div
+                  className={`grid grid-cols-1 ${sz.gap} md:grid-cols-[1fr,160px,170px,1fr] md:items-center`}
+                >
                   {/* Nome */}
                   <div className="min-w-0">
                     <h3 className="font-medium truncate">{it.name}</h3>
@@ -285,7 +273,9 @@ export default function App() {
                         step="0.01"
                         min="0"
                         value={editForm.unit_price}
-                        onChange={(e) => setEditForm({ ...editForm, unit_price: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, unit_price: e.target.value })
+                        }
                         className={inputClass}
                         placeholder="R$ 0,00"
                       />
@@ -302,7 +292,9 @@ export default function App() {
                         type="number"
                         min="1"
                         value={editForm.quantity}
-                        onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, quantity: e.target.value })
+                        }
                         className={`${inputClass} w-24`}
                         placeholder="1"
                       />
@@ -338,25 +330,16 @@ export default function App() {
                         >
                           {loadingEdit ? "Salvando..." : "Salvar"}
                         </button>
-                        <button
-                          onClick={cancelEdit}
-                          className={btnGhost}
-                        >
+                        <button onClick={cancelEdit} className={btnGhost}>
                           Cancelar
                         </button>
                       </>
                     ) : (
                       <>
-                        <button
-                          onClick={() => startEdit(it)}
-                          className={btnGhost}
-                        >
+                        <button onClick={() => startEdit(it)} className={btnGhost}>
                           Editar
                         </button>
-                        <button
-                          onClick={() => removeItem(it.id)}
-                          className={btnDanger}
-                        >
+                        <button onClick={() => removeItem(it.id)} className={btnDanger}>
                           Remover
                         </button>
                       </>

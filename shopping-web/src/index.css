@@ -1,61 +1,122 @@
 @import "tailwindcss";
 
-html, body, #root {
-  height: 100%;
+/* ---------- Base “clean” e acessível ---------- */
+:root {
+  color-scheme: light dark;        /* segue o tema do sistema */
+  --radius: 12px;                  /* raio padrão p/ inputs e cards */
 }
 
-* { -webkit-tap-highlight-color: transparent; }
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  /* cores base ficarão a cargo do Tailwind nas suas divs (.bg-... .text-...) */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Toque mobile: remove flash azul ao tocar */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Foco visível (acessibilidade) */
+*:focus-visible {
+  outline: 2px solid #6366f1;      /* indigo-500 */
+  outline-offset: 2px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #bc00fa92;
-  cursor: pointer;
-  transition: border-color 0.25s;
+/* Scrollbar sutil (webkit) — opcional */
+*::-webkit-scrollbar {
+  width: 10px; height: 10px;
 }
-button:hover {
-  border-color: #646cff;
+*::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,.12);
+  border-radius: 999px;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* Inputs/botões com raio consistente (sem definir cores globais) */
+button, input, select, textarea {
+  border-radius: var(--radius);
+}
+
+/* Links herdam a cor do texto por padrão (você estiliza com Tailwind quando quiser) */
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Removemos o body flex/center do template do Vite para não quebrar seu layout */
+
+/* ---------- Camada de “componentes” (opcional) ---------- */
+/* Se quiser padronizar e reduzir classes no JSX, use estas helpers.
+   Totalmente opcional — não sobrescrevem nada que você não use. */
+/* If you are not using Tailwind/PostCSS, replace @apply with equivalent CSS: */
+.card {
+  background-color: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 1rem; /* rounded-2xl */
+  padding: 1rem; /* p-4 */
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); /* shadow-sm */
+}
+.input {
+  height: 2.5rem; /* h-10 */
+  width: 100%; /* w-full */
+  border-radius: 0.75rem; /* rounded-xl */
+  border: 1px solid rgba(0,0,0,0.10);
+  padding-left: 0.75rem; /* px-3 */
+  padding-right: 0.75rem;
+  font-size: 0.875rem; /* text-sm */
+  outline: none;
+  background-color: #fff;
+}
+.input:focus {
+  box-shadow: 0 0 0 2px #6366f1; /* focus:ring-2 focus:ring-indigo-500 */
+}
+.select {
+  height: 2.25rem; /* h-9 */
+  border-radius: 0.5rem; /* rounded-lg */
+  border: 1px solid rgba(0,0,0,0.10);
+  padding-left: 0.5rem; /* px-2 */
+  padding-right: 0.5rem;
+  font-size: 0.875rem; /* text-sm */
+  outline: none;
+  background-color: #fff;
+}
+.select:focus {
+  box-shadow: 0 0 0 2px #6366f1; /* focus:ring-2 focus:ring-indigo-500 */
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem; /* rounded-xl */
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500; /* font-medium */
+  transition: background-color 0.2s, color 0.2s;
+  opacity: 1;
+  height: 2.5rem; /* 40px */
+  padding-inline: 1rem; /* px-4 */
+}
+.btn:disabled {
+  opacity: 0.6;
+}
+.btn-primary {
+  background-color: #4f46e5; /* indigo-600 */
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: #4338ca; /* indigo-700 */
+}
+.btn-ghost {
+  border: 1px solid rgba(0,0,0,0.10);
+}
+.btn-ghost:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+.btn-danger {
+  background-color: #e11d48; /* rose-600 */
+  color: #fff;
+}
+.btn-danger:hover {
+  background-color: #be123c; /* rose-700 */
 }
