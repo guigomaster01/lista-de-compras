@@ -36,7 +36,7 @@ export default function Home() {
     localStorage.setItem("shopping.compact", compact ? "1" : "0");
   }, [compact]);
 
-// logo após outros useState:
+// Ordernar por nome A→Z (padrão: ligado)
 const [sortAZ, setSortAZ] = useState(() => {
   const v = localStorage.getItem("shopping.sortAZ");
   return v ? v === "1" : true; // padrão: ligado
