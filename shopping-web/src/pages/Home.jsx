@@ -36,6 +36,26 @@ export default function Home() {
     localStorage.setItem("shopping.compact", compact ? "1" : "0");
   }, [compact]);
 
+// logo após outros useState:
+const [sortAZ, setSortAZ] = useState(() => {
+  const v = localStorage.getItem("shopping.sortAZ");
+  return v ? v === "1" : true; // padrão: ligado
+});
+
+// persiste a preferência
+useEffect(() => {
+  localStorage.setItem("shopping.sortAZ", sortAZ ? "1" : "0");
+}, [sortAZ]);
+
+// lista (opcionalmente) ordenada
+const sortedItems = useMemo(() => {
+  if (!Array.isArray(items)) return [];
+  if (!sortAZ) return items;
+  return [...items].sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", "pt-BR", { sensitivity: "base" })
+  );
+}, [items, sortAZ]);
+
   // data
   const fetchItems = async () => {
     setError("");
@@ -133,7 +153,7 @@ export default function Home() {
   return (
     <>
       {/* Barra de opções da Home (modo compacto) */}
-      <div className="flex items-center justify-end mb-3">
+      <div className="flex items-center justify-end mb-3 gap-4">
         <label className="text-sm flex items-center gap-2">
           <input
             type="checkbox"
@@ -143,7 +163,18 @@ export default function Home() {
           />
           Modo compacto
         </label>
+
+        <label className="text-sm flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={sortAZ}
+            onChange={(e) => setSortAZ(e.target.checked)}
+            className="h-4 w-4 accent-indigo-600"
+          />
+          Ordenar A→Z
+        </label>
       </div>
+
 
       {/* Formulário */}
       <section className={`card ${sz.sectionPad}`}>
@@ -182,13 +213,13 @@ export default function Home() {
 
       {/* Lista */}
       <section className="space-y-2 mt-5">
-        {items.length === 0 && (
+        {sortedItems.map((it) => it.id).length === 0 && (
           <div className={`text-center ${sz.textBase} text-gray-500 border border-dashed border-black/10 rounded-xl bg-white ${sz.sectionPad}`}>
             Nenhum item por enquanto. Adicione acima 👆
           </div>
         )}
 
-        {items.map((it) => {
+        {sortedItems.map((it) => {
           const isEditing = editingId === it.id;
           return (
             <article key={it.id} className={`card ${sz.cardPad} hover:shadow transition-shadow`}>
