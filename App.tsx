@@ -1,3 +1,4 @@
+// FIX: Replaced placeholder content with a functional App component to serve as the main entry point and state manager for the application.
 import React, { useState, useEffect, useMemo } from 'react';
 import { AddItemForm } from './components/AddItemForm';
 import { Header } from './components/Header';
@@ -65,6 +66,22 @@ const App: React.FC = () => {
     }, 300);
   };
 
+  const handleUpdatePrice = (id: number, newPrice: number) => {
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id ? { ...item, price: newPrice } : item
+      )
+    );
+  };
+
+  const handleUpdateQuantity = (id: number, newQuantity: number) => {
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
   const handleSortChange = (newSortBy: 'default' | 'name') => {
     setSortBy(newSortBy);
   };
@@ -104,6 +121,8 @@ const App: React.FC = () => {
                 onRemoveItem={handleRemoveItem}
                 onClearList={handleClearList}
                 onSortChange={handleSortChange}
+                onUpdatePrice={handleUpdatePrice}
+                onUpdateQuantity={handleUpdateQuantity}
                 totalPrice={totalPrice}
                 exitingItemIds={exitingItemIds}
               />

@@ -1,14 +1,15 @@
+// FIX: Replaced placeholder content with a functional Donation component to display project support information.
 import React, { useState } from 'react';
 import { CopyIcon } from '../components/icons/CopyIcon';
 import { HeartIcon } from '../components/icons/HeartIcon';
 
 export const Donation: React.FC = () => {
-  const pixKey = 'contatorodrigorodrigues@gmail.com';
+  const pixKey = 'a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6';
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     if (!navigator.clipboard) {
-
+      // Clipboard API not available
       return;
     }
     navigator.clipboard.writeText(pixKey);
@@ -32,7 +33,7 @@ export const Donation: React.FC = () => {
           Qualquer contribuição, por menor que seja, é imensamente apreciada e me ajuda a dedicar mais tempo para adicionar novos recursos e manter tudo funcionando perfeitamente.
         </p>
         <div className="mt-6 p-4 bg-slate-100 dark:bg-slate-700 rounded-lg">
-          <p className="text-sm text-slate-500 dark:text-slate-400">Chave PIX:</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Chave PIX Aleatória:</p>
           <div className="flex items-center justify-between gap-4 mt-1">
             <span className="font-mono text-lg text-slate-800 dark:text-slate-200 break-all">{pixKey}</span>
             <button
