@@ -7,6 +7,7 @@ import { Navigation } from './components/Navigation';
 import { About } from './pages/About';
 import { Donation } from './pages/Donation';
 import type { ShoppingItem } from './types';
+import { Analytics } from "@vercel/analytics/next"
 
 const App: React.FC = () => {
   const [items, setItems] = useState<ShoppingItem[]>(() => {
