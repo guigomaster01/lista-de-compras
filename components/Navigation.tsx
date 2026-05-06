@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { List, Info, Heart } from 'lucide-react';
+import { List, Info, Heart, ShoppingBag } from 'lucide-react';
 
 interface NavigationProps {
   page: 'list' | 'about' | 'donation';
@@ -10,6 +10,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ page, setPage }) => {
   const tabs = [
     { id: 'list', label: 'Lista', icon: List },
+    { id: 'catalog', label: 'Catálogo', icon: ShoppingBag },
     { id: 'about', label: 'Sobre', icon: Info },
     { id: 'donation', label: 'Doação', icon: Heart },
   ] as const;

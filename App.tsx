@@ -6,8 +6,8 @@ import { ShoppingList } from './components/ShoppingList';
 import { Navigation } from './components/Navigation';
 import { About } from './pages/About';
 import { Donation } from './pages/Donation';
+import { Catalog } from './pages/Catalog';
 import type { ShoppingItem } from './types';
-import { Analytics } from "@vercel/analytics/next"
 
 const App: React.FC = () => {
   const [items, setItems] = useState<ShoppingItem[]>(() => {
@@ -21,7 +21,7 @@ const App: React.FC = () => {
   });
 
   const [sortBy, setSortBy] = useState<'default' | 'name'>('default');
-  const [page, setPage] = useState<'list' | 'about' | 'donation'>('list');
+  const [page, setPage] = useState<'list' | 'about' | 'donation' | 'catalog'>('list');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('darkMode');
@@ -147,6 +147,13 @@ const App: React.FC = () => {
             )}
             {page === 'donation' && (
               <Donation key="donation" />
+            )}
+            {page === 'catalog' && (
+              <Catalog 
+                key="catalog" 
+                onAddItem={handleAddItem} 
+                currentItems={items.map(i => i.name)}
+              />
             )}
           </AnimatePresence>
         </main>
