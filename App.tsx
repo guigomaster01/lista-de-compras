@@ -158,11 +158,38 @@ const App: React.FC = () => {
           </AnimatePresence>
         </main>
 
-         <footer className="text-center mt-12 text-slate-400 dark:text-slate-600 text-sm">
+        <footer className="text-center mt-12 text-slate-400 dark:text-slate-600 text-sm pb-24 sm:pb-12">
           <p className="flex items-center justify-center gap-1.5">
             Feito com <span className="text-red-500 animate-pulse">❤️</span> por um dev apaixonado por código.
           </p>
         </footer>
+      </div>
+
+      {/* Navegação Inferior Secundária */}
+      <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+        <div className="flex glass rounded-full card-shadow border border-slate-200/50 dark:border-slate-800/50 p-1.5 pointer-events-auto">
+          <button
+            onClick={() => setPage('about')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              page === 'about'
+                ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <span>Sobre</span>
+          </button>
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 my-auto mx-1" />
+          <button
+            onClick={() => setPage('donation')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              page === 'donation'
+                ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <span>Doação</span>
+          </button>
+        </div>
       </div>
     </div>
   );
