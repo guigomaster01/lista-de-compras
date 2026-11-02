@@ -1,0 +1,144 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // This security rules file assumes the following data structures:
+    //
+    // Collection: shoppingLists
+    // Document ID: {listId} (unique shareable token, 1-64 chars)
+    // Fields:
+    //   - id: string (required, immutable, must match {listId}, 1-64 chars) - unique list identifier
+    //   - ownerId: string (required, immutable, 1-128 chars) - UID of the authenticated creator
+    //   - ownerName: string (required, immutable for collaborators, 1-150 chars) - display name of creator
+    //   - ownerPhoto: string or null (optional, immutable for collaborators, 0-1000 chars) - avatar URL of creator
+    //   - monthKey: string (required, immutable, format YYYY-MM) - reference month for the list
+    //   - items: list (required, max 500 elements) - array of ShoppingItem objects
+    //   - createdAt: string (required, immutable, ISO 8601 date string, max 64 chars) - creation timestamp
+    //   - updatedAt: string (required, ISO 8601 date string, max 64 chars) - last update timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the authenticated user matches the given userId
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if the authenticated user is the owner of the existing document
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.ownerId;
+    }
+
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate that the document contains only the allowed fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate string length
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    // Validate optional nullable string (if present and non-null, must be string within length)
+    function isValidOptionalNullableString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+        request.resource.data[field] == null ||
+        (request.resource.data[field] is string &&
+         request.resource.data[field].size() >= minLen &&
+         request.resource.data[field].size() <= maxLen);
+    }
+
+    // Validate that a list is a list and enforces size limits
+    function isValidList(listData, maxSize) {
+      return listData is list && listData.size() <= maxSize;
+    }
+
+    // Validate YYYY-MM monthKey format
+    function isValidMonthKey(monthKey) {
+      return monthKey is string &&
+        monthKey.matches("^\\d{4}-(0[1-9]|1[0-2])$");
+    }
+
+    // Validate ISO 8601 date string format
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.size() >= 10 &&
+        dateStr.size() <= 64 &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // Validate that immutable fields have not been modified on update
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in both create and update)
+    // ===============================================================
+
+    function isValidShoppingList(data, listId) {
+      return hasRequiredFields(['id', 'ownerId', 'ownerName', 'monthKey', 'items', 'createdAt', 'updatedAt']) &&
+        hasOnlyAllowedFields(['id', 'ownerId', 'ownerName', 'ownerPhoto', 'monthKey', 'items', 'createdAt', 'updatedAt']) &&
+        data.id == listId &&
+        validStringLength('id', 1, 64) &&
+        validStringLength('ownerId', 1, 128) &&
+        validStringLength('ownerName', 1, 150) &&
+        isValidOptionalNullableString('ownerPhoto', 0, 1000) &&
+        isValidMonthKey(data.monthKey) &&
+        isValidList(data.items, 500) &&
+        isValidDateString(data.createdAt) &&
+        isValidDateString(data.updatedAt);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /shoppingLists/{listId} {
+      // Anyone with the unique shareable listId can read a single shared document (?lista=<listId>)
+      allow get: if true;
+
+      // Collection queries are restricted to authenticated users querying only their own lists
+      allow list: if isDocOwner();
+
+      // Only authenticated users can create a list that they own
+      allow create: if isOwner(request.resource.data.ownerId) &&
+        isValidShoppingList(request.resource.data, listId);
+
+      // Authenticated owner or authenticated collaborator with the link can update items/updatedAt,
+      // while immutable identity and month fields are strictly locked
+      allow update: if isAuthenticated() &&
+        isValidShoppingList(request.resource.data, listId) &&
+        areImmutableFieldsUnchanged(['id', 'ownerId', 'monthKey', 'createdAt']) &&
+        (isDocOwner() || areImmutableFieldsUnchanged(['ownerName', 'ownerPhoto']));
+
+      // Only the authenticated owner can delete a list
+      allow delete: if isDocOwner();
+    }
+
+    // Default deny for all other paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

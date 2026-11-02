@@ -1,0 +1,152 @@
+import React, { useState } from 'react';
+import { CopyIcon } from './icons/CopyIcon';
+
+interface MonthlyBarProps {
+  monthKey: string;
+  onChangeMonth: (nextMonthKey: string) => void;
+  shareId: string;
+  isSharedView: boolean;
+  sharedOwnerName?: string;
+  onExitSharedView: () => void;
+  isSyncedCloud: boolean;
+}
+
+const MONTH_NAMES = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
+export const formatMonthLabel = (monthKey: string): string => {
+  const [year, month] = monthKey.split('-').map(Number);
+  if (!year || !month || month < 1 || month > 12) return monthKey;
+  return `${MONTH_NAMES[month - 1]} de ${year}`;
+};
+
+const shiftMonth = (monthKey: string, delta: number): string => {
+  const [year, month] = monthKey.split('-').map(Number);
+  const date = new Date(year, month - 1 + delta, 1);
+  const nextYear = date.getFullYear();
+  const nextMonth = String(date.getMonth() + 1).padStart(2, '0');
+  return `${nextYear}-${nextMonth}`;
+};
+
+export const MonthlyBar: React.FC<MonthlyBarProps> = ({
+  monthKey,
+  onChangeMonth,
+  shareId,
+  isSharedView,
+  sharedOwnerName,
+  onExitSharedView,
+  isSyncedCloud,
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}?lista=${shareId}`;
+
+  const handleCopyShareLink = () => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5 sm:p-4 shadow-2xs space-y-3">
+      {isSharedView && (
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800 text-xs">
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+            <span>
+              Visualizando lista compartilhada
+              {sharedOwnerName ? ` de ${sharedOwnerName}` : ''} (
+              <strong>{formatMonthLabel(monthKey)}</strong>)
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onExitSharedView}
+            className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-2 hover:opacity-80 cursor-pointer"
+          >
+            Voltar para minhas listas
+          </button>
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Seletor de Mês */}
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          {!isSharedView && (
+            <button
+              type="button"
+              onClick={() => onChangeMonth(shiftMonth(monthKey, -1))}
+              className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+              aria-label="Mês anterior"
+              title="Mês anterior"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          <div className="flex items-center gap-2">
+            <label htmlFor="month-picker" className="sr-only">
+              Selecionar mês da lista
+            </label>
+            <input
+              id="month-picker"
+              type="month"
+              value={monthKey}
+              disabled={isSharedView}
+              onChange={(e) => {
+                if (e.target.value) onChangeMonth(e.target.value);
+              }}
+              className="h-8 px-2.5 text-xs font-semibold text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 disabled:opacity-70"
+            />
+            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 hidden md:inline">
+              {formatMonthLabel(monthKey)}
+            </span>
+          </div>
+
+          {!isSharedView && (
+            <button
+              type="button"
+              onClick={() => onChangeMonth(shiftMonth(monthKey, 1))}
+              className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+              aria-label="Próximo mês"
+              title="Próximo mês"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* Compartilhamento com URL única */}
+        <div className="flex items-center justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100 dark:border-zinc-800/80">
+          <button
+            type="button"
+            onClick={handleCopyShareLink}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+            title="Copiar link único para compartilhar esta lista"
+          >
+            <CopyIcon className="w-3.5 h-3.5" />
+            <span>{copied ? 'Link copiado!' : 'Compartilhar Lista'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+

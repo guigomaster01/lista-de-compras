@@ -1,0 +1,225 @@
+import React, { useState, useMemo } from 'react';
+import { PRODUCT_CATALOG } from '../data/catalog';
+import type { ShoppingItem } from '../types';
+import { PlusIcon } from '../components/icons/PlusIcon';
+
+interface CategoriesProps {
+  items: ShoppingItem[];
+  onToggleCatalogItem: (name: string, category: string) => void;
+  onGoToList: () => void;
+}
+
+export const Categories: React.FC<CategoriesProps> = ({
+  items,
+  onToggleCatalogItem,
+  onGoToList,
+}) => {
+  const [search, setSearch] = useState('');
+  const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
+
+  const selectedNamesSet = useMemo(() => {
+    return new Set(items.map((item) => item.name.toLowerCase()));
+  }, [items]);
+
+  const filteredCatalog = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return PRODUCT_CATALOG.filter((cat) =>
+      activeCategoryId === 'all' ? true : cat.id === activeCategoryId
+    )
+      .map((cat) => {
+        if (!query) return cat;
+
+        const filteredGroups = cat.groups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter(
+              (item) =>
+                item.toLowerCase().includes(query) ||
+                cat.title.toLowerCase().includes(query) ||
+                (group.label && group.label.toLowerCase().includes(query))
+            ),
+          }))
+          .filter((group) => group.items.length > 0);
+
+        return {
+          ...cat,
+          groups: filteredGroups,
+        };
+      })
+      .filter((cat) => cat.groups.length > 0);
+  }, [search, activeCategoryId]);
+
+  const cleanCategoryName = (title: string) => title.replace(/^\d+\.\s*/, '');
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 sm:p-5 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              Planejamento por Categoria
+            </h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              Selecione o que precisa comprar antes de ir ao mercado. No mercado, informe a quantidade e o valor na aba <strong>Lista</strong> conforme encontrar os produtos.
+            </p>
+          </div>
+
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={onGoToList}
+              className="flex-shrink-0 inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
+            >
+              <span>Ver lista ({items.length})</span>
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          )}
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-3">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar produto ou categoria (ex: leite, frutas, limpeza)..."
+            className="w-full h-9 px-3 text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+          />
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+            <button
+              type="button"
+              onClick={() => setActiveCategoryId('all')}
+              className={`px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors cursor-pointer ${
+                activeCategoryId === 'all'
+                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Todas ({PRODUCT_CATALOG.length})
+            </button>
+            {PRODUCT_CATALOG.map((cat) => {
+              const shortName = cleanCategoryName(cat.title);
+              const isActive = activeCategoryId === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setActiveCategoryId(cat.id)}
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors cursor-pointer ${
+                    isActive
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  }`}
+                >
+                  {shortName}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {filteredCatalog.length === 0 ? (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl py-12 px-4 text-center">
+          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Nenhum produto encontrado para &ldquo;{search}&rdquo;
+          </p>
+          <p className="text-xs text-zinc-500 mt-1">
+            Tente outro termo ou adicione um item personalizado diretamente na aba Lista.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredCatalog.map((category) => {
+            const categoryLabel = cleanCategoryName(category.title);
+            const allCategoryItems = category.groups.flatMap((g) => g.items);
+            const selectedInCategory = allCategoryItems.filter((item) =>
+              selectedNamesSet.has(item.toLowerCase())
+            ).length;
+
+            return (
+              <section
+                key={category.id}
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-2xs"
+              >
+                <div className="px-4 py-3 bg-zinc-50/70 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {category.title}
+                      {category.subtitle && (
+                        <span className="ml-1.5 font-normal text-xs text-zinc-500 dark:text-zinc-400">
+                          ({category.subtitle})
+                        </span>
+                      )}
+                    </h3>
+                  </div>
+
+                  {selectedInCategory > 0 && (
+                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 tabular-nums">
+                      {selectedInCategory} na lista
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-4 space-y-4">
+                  {category.groups.map((group, groupIdx) => (
+                    <div key={group.label ?? groupIdx}>
+                      {group.label && (
+                        <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">
+                          {group.label}
+                        </h4>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {group.items.map((itemName) => {
+                          const isSelected = selectedNamesSet.has(
+                            itemName.toLowerCase()
+                          );
+
+                          return (
+                            <button
+                              key={itemName}
+                              type="button"
+                              onClick={() =>
+                                onToggleCatalogItem(itemName, categoryLabel)
+                              }
+                              className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer text-left ${
+                                isSelected
+                                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-2xs'
+                                  : 'bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100/70 dark:hover:bg-zinc-900'
+                              }`}
+                            >
+                              {isSelected ? (
+                                <svg
+                                  className="w-3.5 h-3.5 flex-shrink-0"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2.5}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              ) : (
+                                <PlusIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 flex-shrink-0" />
+                              )}
+                              <span>{itemName}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
