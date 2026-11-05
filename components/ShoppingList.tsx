@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ShoppingItem, PreviousPriceInfo } from '../types';
 import { TrashIcon } from './icons/TrashIcon';
 import { CategoryPieChart } from './CategoryPieChart';
+import { useLanguage } from '../lib/i18n';
 
 export type SortOption = 'default' | 'category' | 'name';
 
@@ -22,24 +23,13 @@ interface ShoppingListProps {
   onGoToCategories: () => void;
 }
 
-const SHORT_MONTHS = [
-  'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-  'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
-];
-
-const formatShortMonth = (monthKey: string) => {
-  const [year, month] = monthKey.split('-').map(Number);
-  if (!year || !month || month < 1 || month > 12) return monthKey;
-  return `${SHORT_MONTHS[month - 1]}/${String(year).slice(-2)}`;
-};
-
-const formatCurrency = (value: number) =>
-  value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
 const PriceComparisonBadge: React.FC<{
   currentPrice: number;
   prevInfo?: PreviousPriceInfo;
 }> = ({ currentPrice, prevInfo }) => {
+  const { language, formatCurrency, formatShortMonth } = useLanguage();
+  const isEn = language === 'en';
+
   if (!prevInfo || prevInfo.price <= 0) return null;
 
   const shortMonth = formatShortMonth(prevInfo.monthKey);
@@ -48,23 +38,34 @@ const PriceComparisonBadge: React.FC<{
   if (currentPrice <= 0) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-400 tabular-nums">
-        <span>Último ({shortMonth}): {formatCurrency(prevInfo.price)}</span>
+        <span>
+          {isEn
+            ? `Last (${shortMonth}): ${formatCurrency(prevInfo.price)}`
+            : `Último (${shortMonth}): ${formatCurrency(prevInfo.price)}`}
+        </span>
       </span>
     );
   }
 
   const diff = currentPrice - prevInfo.price;
   const pct = (diff / prevInfo.price) * 100;
+  const formattedPct = isEn
+    ? pct.toFixed(1)
+    : pct.toFixed(1).replace('.', ',');
 
   if (diff > 0.004) {
     return (
       <span
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border border-red-200/70 dark:border-red-900/60 tabular-nums"
-        title={`Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`}
+        title={
+          isEn
+            ? `In ${shortMonth} it cost ${formatCurrency(prevInfo.price)}`
+            : `Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`
+        }
       >
         <span aria-hidden="true">&uarr;</span>
         <span>
-          +{formatCurrency(diff)} (+{pct.toFixed(1).replace('.', ',')}%) vs {shortMonth} ({formatCurrency(prevInfo.price)})
+          +{formatCurrency(diff)} (+{formattedPct}%) vs {shortMonth} ({formatCurrency(prevInfo.price)})
         </span>
       </span>
     );
@@ -74,11 +75,15 @@ const PriceComparisonBadge: React.FC<{
     return (
       <span
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-900/60 tabular-nums"
-        title={`Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`}
+        title={
+          isEn
+            ? `In ${shortMonth} it cost ${formatCurrency(prevInfo.price)}`
+            : `Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`
+        }
       >
         <span aria-hidden="true">&darr;</span>
         <span>
-          {formatCurrency(diff)} ({pct.toFixed(1).replace('.', ',')}%) vs {shortMonth} ({formatCurrency(prevInfo.price)})
+          {formatCurrency(diff)} ({formattedPct}%) vs {shortMonth} ({formatCurrency(prevInfo.price)})
         </span>
       </span>
     );
@@ -87,9 +92,17 @@ const PriceComparisonBadge: React.FC<{
   return (
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 tabular-nums"
-      title={`Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`}
+      title={
+        isEn
+          ? `In ${shortMonth} it cost ${formatCurrency(prevInfo.price)}`
+          : `Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`
+      }
     >
-      <span>= Mesmo valor de {shortMonth} ({formatCurrency(prevInfo.price)})</span>
+      <span>
+        {isEn
+          ? `= Same price as ${shortMonth} (${formatCurrency(prevInfo.price)})`
+          : `= Mesmo valor de ${shortMonth} (${formatCurrency(prevInfo.price)})`}
+      </span>
     </span>
   );
 };
@@ -102,19 +115,31 @@ const ShoppingListItem: React.FC<{
   onRemove: (id: number) => void;
   isExiting: boolean;
 }> = ({ item, prevInfo, onToggle, onUpdate, onRemove, isExiting }) => {
+  const { language, formatCurrency, currencySymbol } = useLanguage();
+  const isEn = language === 'en';
+
   const animationClass = isExiting ? 'animate-fade-out-scale' : 'animate-fade-in-scale';
   const subtotal = item.quantity * item.price;
 
-  const [priceInput, setPriceInput] = useState(() =>
-    item.price > 0 ? item.price.toFixed(2).replace('.', ',') : ''
-  );
+  const formatInputPrice = (val: number) => {
+    if (val <= 0) return '';
+    return isEn ? val.toFixed(2) : val.toFixed(2).replace('.', ',');
+  };
+
+  const [priceInput, setPriceInput] = useState(() => formatInputPrice(item.price));
   const [isEditingPrice, setIsEditingPrice] = useState(false);
 
   useEffect(() => {
     if (!isEditingPrice) {
-      setPriceInput(item.price > 0 ? item.price.toFixed(2).replace('.', ',') : '');
+      setPriceInput(
+        item.price > 0
+          ? isEn
+            ? item.price.toFixed(2)
+            : item.price.toFixed(2).replace('.', ',')
+          : ''
+      );
     }
-  }, [item.price, isEditingPrice]);
+  }, [item.price, isEditingPrice, isEn]);
 
   const handlePriceChange = (val: string) => {
     setPriceInput(val);
@@ -176,7 +201,9 @@ const ShoppingListItem: React.FC<{
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               {item.price === 0
-                ? 'Informe qtd. e valor ao encontrar no mercado'
+                ? isEn
+                  ? 'Enter qty & price when you find it in the store'
+                  : 'Informe qtd. e valor ao encontrar no mercado'
                 : `Subtotal: ${formatCurrency(subtotal)}`}
             </span>
             <PriceComparisonBadge currentPrice={item.price} prevInfo={prevInfo} />
@@ -188,10 +215,10 @@ const ShoppingListItem: React.FC<{
         <div className="flex items-center gap-2">
           <div className="flex items-center">
             <label htmlFor={`qty-${item.id}`} className="sr-only">
-              Quantidade de {item.name}
+              {isEn ? `Quantity of ${item.name}` : `Quantidade de ${item.name}`}
             </label>
             <span className="text-xs text-zinc-400 dark:text-zinc-500 mr-1.5">
-              Qtd
+              {isEn ? 'Qty' : 'Qtd'}
             </span>
             <input
               id={`qty-${item.id}`}
@@ -205,16 +232,16 @@ const ShoppingListItem: React.FC<{
 
           <div className="relative flex items-center">
             <label htmlFor={`price-${item.id}`} className="sr-only">
-              Preço unitário de {item.name}
+              {isEn ? `Unit price of ${item.name}` : `Preço unitário de ${item.name}`}
             </label>
             <span className="absolute left-2.5 text-xs text-zinc-400 dark:text-zinc-500 pointer-events-none">
-              R$
+              {currencySymbol}
             </span>
             <input
               id={`price-${item.id}`}
               type="text"
               inputMode="decimal"
-              placeholder="0,00"
+              placeholder={isEn ? '0.00' : '0,00'}
               value={priceInput}
               onFocus={() => setIsEditingPrice(true)}
               onBlur={() => setIsEditingPrice(false)}
@@ -240,7 +267,7 @@ const ShoppingListItem: React.FC<{
           type="button"
           onClick={() => onRemove(item.id)}
           className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors cursor-pointer"
-          aria-label={`Remover ${item.name}`}
+          aria-label={isEn ? `Remove ${item.name}` : `Remover ${item.name}`}
         >
           <TrashIcon className="w-4 h-4" />
         </button>
@@ -265,14 +292,21 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   exitingItemIds,
   onGoToCategories,
 }) => {
+  const { language, formatCurrency } = useLanguage();
+  const isEn = language === 'en';
+
   if (items.length === 0 && exitingItemIds.length === 0) {
     return (
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl py-12 px-4 text-center">
         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Sua lista de compras deste mês está vazia
+          {isEn
+            ? 'Your shopping list for this month is empty'
+            : 'Sua lista de compras deste mês está vazia'}
         </p>
         <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1 max-w-md mx-auto">
-          Escolha produtos prontos na aba de categorias, importe os produtos do mês anterior ou adicione um item avulso acima.
+          {isEn
+            ? 'Pick ready-made items from the Categories tab, import last month’s items, or add a custom item above.'
+            : 'Escolha produtos prontos na aba de categorias, importe os produtos do mês anterior ou adicione um item avulso acima.'}
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
           <button
@@ -280,7 +314,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
             onClick={onGoToCategories}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
           >
-            <span>Montar lista por Categorias</span>
+            <span>{isEn ? 'Build list by Categories' : 'Montar lista por Categorias'}</span>
             <span aria-hidden="true">&rarr;</span>
           </button>
 
@@ -290,7 +324,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               onClick={onImportPreviousMonth}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
             >
-              <span>Repetir itens do mês anterior</span>
+              <span>{isEn ? 'Repeat last month’s items' : 'Repetir itens do mês anterior'}</span>
             </button>
           )}
         </div>
@@ -303,7 +337,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
           <span className="block text-xs text-zinc-500 dark:text-zinc-400">
-            Falta pegar (Pendente)
+            {isEn ? 'Remaining (Pending)' : 'Falta pegar (Pendente)'}
           </span>
           <span className="mt-1 block text-base font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
             {formatCurrency(totalPrice)}
@@ -312,7 +346,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
           <span className="block text-xs text-zinc-500 dark:text-zinc-400">
-            No carrinho (Marcados)
+            {isEn ? 'In cart (Checked)' : 'No carrinho (Marcados)'}
           </span>
           <span className="mt-1 block text-base font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
             {formatCurrency(completedTotal)}
@@ -321,7 +355,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
         <div className="col-span-2 sm:col-span-1 bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-zinc-100 rounded-xl p-3.5">
           <span className="block text-xs text-zinc-400 dark:text-zinc-600">
-            Total da compra
+            {isEn ? 'Total purchase' : 'Total da compra'}
           </span>
           <span className="mt-1 block text-base font-semibold text-white dark:text-zinc-900 tabular-nums">
             {formatCurrency(totalPrice + completedTotal)}
@@ -336,7 +370,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               htmlFor="sort-select"
               className="text-xs font-medium text-zinc-500 dark:text-zinc-400"
             >
-              Ordenar:
+              {isEn ? 'Sort by:' : 'Ordenar:'}
             </label>
             <select
               id="sort-select"
@@ -344,9 +378,9 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               onChange={(e) => onSortChange(e.target.value as SortOption)}
               className="text-xs font-medium text-zinc-800 dark:text-zinc-200 bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10"
             >
-              <option value="category">Por Categoria</option>
-              <option value="default">Ordem de inclusão</option>
-              <option value="name">Alfabética (A-Z)</option>
+              <option value="category">{isEn ? 'By Category' : 'Por Categoria'}</option>
+              <option value="default">{isEn ? 'Date Added' : 'Ordem de inclusão'}</option>
+              <option value="name">{isEn ? 'Alphabetical (A-Z)' : 'Alfabética (A-Z)'}</option>
             </select>
           </div>
 
@@ -356,7 +390,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               onClick={onGoToCategories}
               className="text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
             >
-              + Categorias
+              {isEn ? '+ Categories' : '+ Categorias'}
             </button>
             {items.length > 0 && (
               <button
@@ -364,7 +398,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 onClick={onClearList}
                 className="text-xs font-medium text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 transition-colors cursor-pointer"
               >
-                Limpar lista
+                {isEn ? 'Clear list' : 'Limpar lista'}
               </button>
             )}
           </div>

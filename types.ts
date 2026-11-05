@@ -1,3 +1,5 @@
+export type Language = 'pt' | 'en';
+
 export type PageType = 'list' | 'categories' | 'about' | 'donation';
 
 export interface ShoppingItem {

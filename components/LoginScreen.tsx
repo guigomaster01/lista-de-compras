@@ -1,5 +1,6 @@
 import React from 'react';
 import { isFirebaseConfigured } from '../lib/firebase';
+import { useLanguage } from '../lib/i18n';
 
 interface LoginScreenProps {
   onGoogleLogin: () => void;
@@ -8,119 +9,270 @@ interface LoginScreenProps {
   error: string | null;
 }
 
-const ADVANTAGES = [
-  {
-    title: 'Comparativo de preços mês a mês',
-    description:
-      'Veja na hora, direto no corredor do mercado, quanto você pagou no mesmo item no mês anterior e saiba se está caro ou barato.',
-    badge: 'Economia real',
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-5 h-5"
-      >
-        <path d="M3 3v18h18" />
-        <path d="m19 9-5 5-4-4-3 3" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Compartilhamento em tempo real',
-    description:
-      'Gere um link único da sua lista e envie no WhatsApp. Duas pessoas podem marcar itens no carrinho ao mesmo tempo.',
-    badge: 'Em família',
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-5 h-5"
-      >
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Importe a lista do mês passado com 1 clique',
-    description:
-      'Não perca tempo digitando tudo do zero. Reaproveite os produtos do mês anterior e atualize apenas os preços no mercado.',
-    badge: 'Praticidade',
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-5 h-5"
-      >
-        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-        <path d="M3 3v5h5" />
-        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-        <path d="M16 16h5v5" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Sem surpresas na hora de passar no caixa',
-    description:
-      'Acompanhe o valor exato do que já está no carrinho, o que falta pegar e o gráfico de gastos por categoria (Açougue, Limpeza, Hortifrúti).',
-    badge: 'Controle total',
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-5 h-5"
-      >
-        <circle cx="8" cy="21" r="1" />
-        <circle cx="19" cy="21" r="1" />
-        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-      </svg>
-    ),
-  },
-];
-
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onGoogleLogin,
   onContinueLocalDemo,
   isLoading,
   error,
 }) => {
+  const { language, setLanguage } = useLanguage();
+  const isEn = language === 'en';
+
+  const advantages = isEn
+    ? [
+        {
+          title: 'Month-over-month price comparison',
+          description:
+            'See right in the grocery aisle how much you paid for the exact same item last month and know immediately if it is cheaper or pricier.',
+          badge: 'Real savings',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Real-time family sharing',
+          description:
+            'Generate a unique link for your monthly list and send it via WhatsApp or iMessage. Two people can check off items in the cart at the same time.',
+          badge: 'Family sync',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          ),
+        },
+        {
+          title: '1-click import from last month',
+          description:
+            'Never type your recurring groceries from scratch again. Reuse last month’s items and only update the prices as you shop.',
+          badge: 'Time saver',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Zero surprises at checkout',
+          description:
+            'Track the exact total of what is already in your cart, what is still pending, and view a spending breakdown chart by aisle category.',
+          badge: 'Full control',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <circle cx="8" cy="21" r="1" />
+              <circle cx="19" cy="21" r="1" />
+              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+            </svg>
+          ),
+        },
+      ]
+    : [
+        {
+          title: 'Comparativo de preços mês a mês',
+          description:
+            'Veja na hora, direto no corredor do mercado, quanto você pagou no mesmo item no mês anterior e saiba se está caro ou barato.',
+          badge: 'Economia real',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Compartilhamento em tempo real',
+          description:
+            'Gere um link único da sua lista e envie no WhatsApp. Duas pessoas podem marcar itens no carrinho ao mesmo tempo.',
+          badge: 'Em família',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Importe a lista do mês passado com 1 clique',
+          description:
+            'Não perca tempo digitando tudo do zero. Reaproveite os produtos do mês anterior e atualize apenas os preços no mercado.',
+          badge: 'Praticidade',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Sem surpresas na hora de passar no caixa',
+          description:
+            'Acompanhe o valor exato do que já está no carrinho, o que falta pegar e o gráfico de gastos por categoria (Açougue, Limpeza, Hortifrúti).',
+          badge: 'Controle total',
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <circle cx="8" cy="21" r="1" />
+              <circle cx="19" cy="21" r="1" />
+              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+            </svg>
+          ),
+        },
+      ];
+
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Seletor de Idioma em Destaque na Tela de Login */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 shadow-2xs">
+        <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-4 h-4 text-zinc-500 dark:text-zinc-400 flex-shrink-0"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+            <path d="M2 12h20" />
+          </svg>
+          <span className="font-medium text-zinc-800 dark:text-zinc-200">
+            {isEn ? 'Choose your language:' : 'Escolha o idioma:'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:inline-flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-800/90 p-1 rounded-lg border border-zinc-200/70 dark:border-zinc-700/70">
+          <button
+            type="button"
+            onClick={() => setLanguage('pt')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              language === 'pt'
+                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-2xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <span aria-hidden="true">🇧🇷</span>
+            <span>Português (BR)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setLanguage('en')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              language === 'en'
+                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-2xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <span aria-hidden="true">🇺🇸</span>
+            <span>English (EN)</span>
+          </button>
+        </div>
+      </div>
+
       {/* Hero / CTA Principal */}
       <section className="relative overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-10 shadow-2xs">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/70 text-emerald-700 dark:text-emerald-300 text-xs font-medium mb-5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          100% gratuito • Sem anúncios • Rápido no celular
+          {isEn
+            ? '100% Free • No Ads • Mobile-Friendly'
+            : '100% gratuito • Sem anúncios • Rápido no celular'}
         </div>
 
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight">
-          Sua ida ao supermercado mais rápida, organizada e econômica.
+          {isEn
+            ? 'Make your grocery trips faster, smarter, and on budget.'
+            : 'Sua ida ao supermercado mais rápida, organizada e econômica.'}
         </h2>
 
         <p className="mt-3 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-2xl">
-          Monte sua lista em segundos, saiba se os preços subiram em relação ao mês passado, calcule o total do carrinho em tempo real e compartilhe a lista com a família pelo WhatsApp.
+          {isEn
+            ? 'Build your list in seconds, see if prices went up compared to last month, track your cart total in real time, and share your list with family.'
+            : 'Monte sua lista em segundos, saiba se os preços subiram em relação ao mês passado, calcule o total do carrinho em tempo real e compartilhe a lista com a família pelo WhatsApp.'}
         </p>
 
         {error && (
@@ -157,7 +309,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 />
               </svg>
               <span>
-                {isLoading ? 'Conectando...' : 'Entrar com Google e salvar na nuvem'}
+                {isLoading
+                  ? isEn
+                    ? 'Connecting...'
+                    : 'Conectando...'
+                  : isEn
+                    ? 'Sign in with Google & sync to cloud'
+                    : 'Entrar com Google e salvar na nuvem'}
               </span>
             </button>
           )}
@@ -171,7 +329,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 : 'text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 font-semibold shadow-xs'
             }`}
           >
-            <span>Começar agora sem cadastro</span>
+            <span>{isEn ? 'Start now without account' : 'Começar agora sem cadastro'}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
@@ -189,14 +347,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
           {isFirebaseConfigured
-            ? 'Ao entrar com o Google você sincroniza suas listas entre celular e computador e pode compartilhar via link.'
-            : 'Seus itens ficam salvos automaticamente no navegador deste aparelho, sem precisar criar conta.'}
+            ? isEn
+              ? 'Sign in with Google to sync your lists across phone and computer and share via link.'
+              : 'Ao entrar com o Google você sincroniza suas listas entre celular e computador e pode compartilhar via link.'
+            : isEn
+              ? 'Your items are automatically saved in this device’s browser without needing an account.'
+              : 'Seus itens ficam salvos automaticamente no navegador deste aparelho, sem precisar criar conta.'}
         </p>
 
         {/* Prévia visual de como funciona no mercado */}
         <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800/80">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
-            Veja como fica sua lista no mercado
+            {isEn
+              ? 'See how your list looks in the store'
+              : 'Veja como fica sua lista no mercado'}
           </div>
           <div className="rounded-xl bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800 p-3.5 sm:p-4 space-y-2.5">
             <div className="flex items-center justify-between gap-2 bg-white dark:bg-zinc-900 px-3.5 py-2.5 rounded-lg border border-zinc-200/70 dark:border-zinc-800">
@@ -207,19 +371,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      Azeite de Oliva Extra Virgem
+                      {isEn ? 'Extra Virgin Olive Oil' : 'Azeite de Oliva Extra Virgem'}
                     </span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                      Mercearia
+                      {isEn ? 'Pantry' : 'Mercearia'}
                     </span>
                   </div>
                   <span className="inline-block mt-0.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                    ↓ R$ 3,50 mais barato que no mês passado (R$ 42,90)
+                    {isEn
+                      ? '↓ $1.50 cheaper than last month ($10.90)'
+                      : '↓ R$ 3,50 mais barato que no mês passado (R$ 42,90)'}
                   </span>
                 </div>
               </div>
               <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums flex-shrink-0">
-                R$ 39,40
+                {isEn ? '$9.40' : 'R$ 39,40'}
               </span>
             </div>
 
@@ -229,19 +395,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      Café Torrado e Moído 500g (2 un)
+                      {isEn ? 'Roasted Ground Coffee 500g (2x)' : 'Café Torrado e Moído 500g (2 un)'}
                     </span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                      Padaria & Matinais
+                      {isEn ? 'Bakery & Breakfast' : 'Padaria & Matinais'}
                     </span>
                   </div>
                   <span className="inline-block mt-0.5 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                    ↑ +R$ 1,20 por un. em relação ao mês anterior
+                    {isEn
+                      ? '↑ +$0.80 per unit compared to last month'
+                      : '↑ +R$ 1,20 por un. em relação ao mês anterior'}
                   </span>
                 </div>
               </div>
               <span className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums flex-shrink-0">
-                R$ 37,80
+                {isEn ? '$14.80' : 'R$ 37,80'}
               </span>
             </div>
           </div>
@@ -252,15 +420,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Por que usar a Lista de Compras?
+            {isEn ? 'Why use Shopping List?' : 'Por que usar a Lista de Compras?'}
           </h3>
           <span className="text-xs text-zinc-500 dark:text-zinc-400">
-            Feita para usar com uma mão no mercado
+            {isEn
+              ? 'Designed for one-handed use in the aisle'
+              : 'Feita para usar com uma mão no mercado'}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {ADVANTAGES.map((item) => (
+          {advantages.map((item) => (
             <div
               key={item.title}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-2xs flex flex-col justify-between gap-3"
@@ -290,10 +460,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       <section className="bg-zinc-900 dark:bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
         <div className="space-y-1 max-w-md">
           <h3 className="text-base sm:text-lg font-semibold text-white">
-            Pronto para organizar a compra deste mês?
+            {isEn
+              ? 'Ready to organize this month’s groceries?'
+              : 'Pronto para organizar a compra deste mês?'}
           </h3>
           <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-            Escolha itens do catálogo pronto por corredor ou crie sua própria lista personalizada em segundos.
+            {isEn
+              ? 'Pick items from our ready-made aisle catalog or create your own custom list in seconds.'
+              : 'Escolha itens do catálogo pronto por corredor ou crie sua própria lista personalizada em segundos.'}
           </p>
         </div>
 
@@ -306,14 +480,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 disabled={isLoading}
                 className="px-4 py-2.5 text-xs sm:text-sm font-semibold bg-white text-zinc-900 rounded-xl hover:bg-zinc-100 transition-colors cursor-pointer text-center"
               >
-                {isLoading ? 'Conectando...' : 'Criar minha lista com Google'}
+                {isLoading
+                  ? isEn
+                    ? 'Connecting...'
+                    : 'Conectando...'
+                  : isEn
+                    ? 'Create my list with Google'
+                    : 'Criar minha lista com Google'}
               </button>
               <button
                 type="button"
                 onClick={onContinueLocalDemo}
                 className="px-4 py-2.5 text-xs sm:text-sm font-medium bg-zinc-800 text-zinc-200 hover:bg-zinc-700 border border-zinc-700 rounded-xl transition-colors cursor-pointer text-center"
               >
-                Testar sem login
+                {isEn ? 'Try without login' : 'Testar sem login'}
               </button>
             </>
           ) : (
@@ -322,7 +502,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               onClick={onContinueLocalDemo}
               className="px-5 py-2.5 text-xs sm:text-sm font-semibold bg-white text-zinc-900 rounded-xl hover:bg-zinc-100 transition-colors cursor-pointer text-center"
             >
-              Montar minha lista agora
+              {isEn ? 'Build my list now' : 'Montar minha lista agora'}
             </button>
           )}
         </div>

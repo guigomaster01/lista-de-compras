@@ -1,6 +1,6 @@
-import type { CatalogCategory } from '../types';
+import type { CatalogCategory, Language } from '../types';
 
-export const PRODUCT_CATALOG: CatalogCategory[] = [
+export const PRODUCT_CATALOG_PT: CatalogCategory[] = [
   {
     id: 'hortifruti',
     title: '1. Hortifrúti',
@@ -188,3 +188,195 @@ export const PRODUCT_CATALOG: CatalogCategory[] = [
   },
 ];
 
+export const PRODUCT_CATALOG_EN: CatalogCategory[] = [
+  {
+    id: 'hortifruti',
+    title: '1. Produce',
+    subtitle: 'Fruits, Greens & Vegetables',
+    groups: [
+      {
+        label: 'Fruits',
+        items: [
+          'Banana',
+          'Apple',
+          'Orange',
+          'Lemon / Lime',
+          'Papaya',
+          'Watermelon',
+          'Avocado',
+          'Strawberry',
+        ],
+      },
+      {
+        label: 'Leafy Greens',
+        items: ['Lettuce', 'Arugula', 'Kale', 'Spinach', 'Cabbage'],
+      },
+      {
+        label: 'Vegetables',
+        items: [
+          'Tomato',
+          'Onion',
+          'Garlic',
+          'Carrot',
+          'Potato',
+          'Cassava / Yuca',
+          'Zucchini',
+          'Bell Pepper',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'acougue-peixaria',
+    title: '2. Meat & Seafood',
+    subtitle: 'Proteins',
+    groups: [
+      {
+        label: 'Beef',
+        items: ['Sirloin', 'Rump Steak', 'Chuck Roast', 'Ground Beef', 'Beef Ribs'],
+      },
+      {
+        label: 'Poultry',
+        items: ['Chicken Breast', 'Chicken Thighs & Drumsticks', 'Whole Chicken'],
+      },
+      {
+        label: 'Pork & Deli Meats',
+        items: [
+          'Pork Loin',
+          'Bacon',
+          'Pork Sausage',
+          'Sliced Ham',
+          'Turkey Breast',
+          'Hot Dogs / Franks',
+        ],
+      },
+      {
+        label: 'Fish & Seafood',
+        items: ['Tilapia Fillet', 'Salmon', 'Shrimp'],
+      },
+    ],
+  },
+  {
+    id: 'laticinios-frios',
+    title: '3. Dairy & Chilled',
+    groups: [
+      {
+        items: [
+          'Milk (Whole, Skim, Lactose-Free)',
+          'Cheese (Mozzarella, Cheddar, Parmesan)',
+          'Cream Cheese & Spreads',
+          'Butter & Margarine',
+          'Yogurt',
+          'Heavy Cream & Condensed Milk',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'padaria-cafe',
+    title: '4. Bakery & Breakfast',
+    groups: [
+      {
+        items: [
+          'French Bread / Sliced Bread',
+          'Whole Wheat Bread',
+          'Ground or Instant Coffee',
+          'Assorted Teas',
+          'Sugar (White, Brown, Raw) / Sweetener',
+          'Jam & Honey',
+          'Granola & Oats',
+          'Breakfast Cereal',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'despensa-mercearia',
+    title: '5. Pantry & Groceries',
+    groups: [
+      {
+        items: [
+          'Rice (White or Brown)',
+          'Beans (Pinto, Black or White)',
+          'Pasta (Spaghetti, Penne, Lasagna)',
+          'Tomato Sauce',
+          'Cooking Oil / Extra Virgin Olive Oil',
+          'Flour (All-Purpose, Cornmeal, Cassava)',
+          'Salt, Spices & Dried Herbs',
+          'Canned Tuna or Sardines',
+          'Canned Corn & Peas',
+          'Cookies & Crackers',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'bebidas',
+    title: '6. Beverages',
+    groups: [
+      {
+        items: [
+          'Bottled Water (Still & Sparkling)',
+          'Soda & Soft Drinks',
+          'Juices (Carton, Powder or Concentrate)',
+          'Beer, Wine & Spirits',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'limpeza',
+    title: '7. Household Cleaning',
+    groups: [
+      {
+        items: [
+          'Dish Soap',
+          'Laundry Detergent (Liquid or Powder)',
+          'Fabric Softener',
+          'Disinfectant',
+          'Bleach',
+          'All-Purpose Cleaner',
+          'Kitchen Sponges & Steel Wool',
+          'Trash Bags (Assorted Sizes)',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'higiene-beleza',
+    title: '8. Personal Care & Beauty',
+    groups: [
+      {
+        items: [
+          'Toilet Paper',
+          'Bar Soap / Body Wash',
+          'Shampoo & Conditioner',
+          'Toothpaste & Dental Floss',
+          'Deodorant',
+          'Feminine Care Pads',
+          'Cotton Swabs & Cotton Balls',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'utilidades-diversos',
+    title: '9. Household Essentials & Misc',
+    subtitle: 'Optional',
+    groups: [
+      {
+        items: [
+          'Aluminum Foil / Plastic Wrap',
+          'Paper Napkins & Paper Towels',
+          'Batteries (AA, AAA)',
+          'Pet Food (Dog / Cat)',
+        ],
+      },
+    ],
+  },
+];
+
+export const PRODUCT_CATALOG = PRODUCT_CATALOG_PT;
+
+export const getProductCatalog = (language: Language): CatalogCategory[] =>
+  language === 'en' ? PRODUCT_CATALOG_EN : PRODUCT_CATALOG_PT;

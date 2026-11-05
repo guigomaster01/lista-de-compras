@@ -13,6 +13,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { auth, db, googleProvider, isFirebaseConfigured } from './lib/firebase';
+import { LanguageProvider, useLanguage } from './lib/i18n';
 import { AddItemForm } from './components/AddItemForm';
 import { Header, type AuthUserDisplay } from './components/Header';
 import { LoginScreen } from './components/LoginScreen';
@@ -42,7 +43,10 @@ const generateUniqueShareId = (): string => {
   return Array.from(randomValues, (v) => chars[v % chars.length]).join('');
 };
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { language } = useLanguage();
+  const isEn = language === 'en';
+
   const [user, setUser] = useState<AuthUserDisplay | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(isFirebaseConfigured);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -202,14 +206,14 @@ const App: React.FC = () => {
     return {
       id: generateUniqueShareId(),
       ownerId: user?.uid || 'local-demo-user',
-      ownerName: user?.displayName || user?.email || 'Usuário',
+      ownerName: user?.displayName || user?.email || (isEn ? 'User' : 'Usuário'),
       ownerPhoto: user?.photoURL || null,
       monthKey,
       items: [],
       createdAt: nowIso,
       updatedAt: nowIso,
     };
-  }, [sharedListIdParam, sharedListDoc, monthlyLists, monthKey, user]);
+  }, [sharedListIdParam, sharedListDoc, monthlyLists, monthKey, user, isEn]);
 
   // Garante que a lista do mês corrente tenha ID fixo salvo no estado quando o usuário logar
   useEffect(() => {
@@ -258,7 +262,10 @@ const App: React.FC = () => {
       const updatedList: MonthlyShoppingList = {
         ...activeList,
         ownerId: activeList.ownerId || user?.uid || 'local-demo-user',
-        ownerName: activeList.ownerName || user?.displayName || 'Usuário',
+        ownerName:
+          activeList.ownerName ||
+          user?.displayName ||
+          (isEn ? 'User' : 'Usuário'),
         items: updatedItems,
         updatedAt: new Date().toISOString(),
       };
@@ -280,7 +287,7 @@ const App: React.FC = () => {
         }
       }
     },
-    [activeList, sharedListIdParam, sharedListDoc, user]
+    [activeList, sharedListIdParam, sharedListDoc, user, isEn]
   );
 
   const handleImportPreviousMonth = () => {
@@ -304,7 +311,11 @@ const App: React.FC = () => {
       await signInWithPopup(auth, googleProvider);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Falha ao autenticar com o Google.';
+        err instanceof Error
+          ? err.message
+          : isEn
+            ? 'Failed to authenticate with Google.'
+            : 'Falha ao autenticar com o Google.';
       setAuthError(message);
     } finally {
       setAuthLoading(false);
@@ -314,7 +325,7 @@ const App: React.FC = () => {
   const handleContinueLocalDemo = () => {
     setUser({
       uid: 'local-demo-user',
-      displayName: 'Conta Local',
+      displayName: isEn ? 'Local Account' : 'Conta Local',
       email: null,
       photoURL: null,
     });
@@ -420,8 +431,8 @@ const App: React.FC = () => {
         return a.name.localeCompare(b.name);
       }
       if (sortBy === 'category') {
-        const catA = a.category || 'Outros';
-        const catB = b.category || 'Outros';
+        const catA = a.category || (isEn ? 'Others' : 'Outros');
+        const catB = b.category || (isEn ? 'Others' : 'Outros');
         const catDiff = catA.localeCompare(catB);
         return catDiff !== 0 ? catDiff : a.name.localeCompare(b.name);
       }
@@ -434,7 +445,7 @@ const App: React.FC = () => {
     }
 
     return [...uncompleted, ...completed];
-  }, [items, sortBy]);
+  }, [items, sortBy, isEn]);
 
   const totalPrice = useMemo(() => {
     return items
@@ -533,5 +544,11 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+const App: React.FC = () => (
+  <LanguageProvider>
+    <AppContent />
+  </LanguageProvider>
+);
 
 export default App;

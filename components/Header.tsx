@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SunIcon } from './icons/SunIcon';
 import { MoonIcon } from './icons/MoonIcon';
+import { useLanguage } from '../lib/i18n';
 import type { PageType } from '../types';
 
 export interface AuthUserDisplay {
@@ -21,13 +22,6 @@ interface HeaderProps {
   onLogout: () => void;
 }
 
-const NAV_ITEMS: { id: PageType; label: string }[] = [
-  { id: 'list', label: 'Lista' },
-  { id: 'categories', label: 'Categorias' },
-  { id: 'about', label: 'Sobre' },
-  { id: 'donation', label: 'Apoiar' },
-];
-
 export const Header: React.FC<HeaderProps> = ({
   page,
   setPage,
@@ -39,6 +33,15 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language, setLanguage } = useLanguage();
+  const isEn = language === 'en';
+
+  const navItems: { id: PageType; label: string }[] = [
+    { id: 'list', label: isEn ? 'List' : 'Lista' },
+    { id: 'categories', label: isEn ? 'Categories' : 'Categorias' },
+    { id: 'about', label: isEn ? 'About' : 'Sobre' },
+    { id: 'donation', label: isEn ? 'Support' : 'Apoiar' },
+  ];
 
   const handleSelectPage = (nextPage: PageType) => {
     setPage(nextPage);
@@ -54,18 +57,24 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-semibold text-sm tracking-tight shadow-xs flex-shrink-0">
-            LC
+            {isEn ? 'SL' : 'LC'}
           </div>
           <div className="min-w-0">
             <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-none truncate">
-              Lista de Compras
+              {isEn ? 'Shopping List' : 'Lista de Compras'}
             </h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 truncate">
               {!user
-                ? 'Faça login para sincronizar'
+                ? isEn
+                  ? 'Sign in to sync'
+                  : 'Faça login para sincronizar'
                 : itemCount === 0
-                  ? 'Nenhum item na lista'
-                  : `${completedCount} de ${itemCount} no carrinho`}
+                  ? isEn
+                    ? 'No items in the list'
+                    : 'Nenhum item na lista'
+                  : isEn
+                    ? `${completedCount} of ${itemCount} in cart`
+                    : `${completedCount} de ${itemCount} no carrinho`}
             </p>
           </div>
         </div>
@@ -74,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Navegação Desktop */}
           {user && (
             <nav className="hidden sm:flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60">
-              {NAV_ITEMS.map(({ id, label }) => {
+              {navItems.map(({ id, label }) => {
                 const isActive = page === id;
                 return (
                   <button
@@ -100,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
-                  alt={user.displayName || 'Usuário'}
+                  alt={user.displayName || (isEn ? 'User' : 'Usuário')}
                   className="w-7 h-7 rounded-full border border-zinc-200 dark:border-zinc-700 object-cover"
                   referrerPolicy="no-referrer"
                 />
@@ -113,20 +122,46 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={onLogout}
                 className="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                title="Sair da conta"
+                title={isEn ? 'Sign out' : 'Sair da conta'}
               >
-                Sair
+                {isEn ? 'Sign out' : 'Sair'}
               </button>
             </div>
           )}
+
+          {/* Alternar Idioma Rápido */}
+          <button
+            type="button"
+            onClick={() => setLanguage(isEn ? 'pt' : 'en')}
+            className="h-8 px-2.5 rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            title={isEn ? 'Mudar para Português (BR)' : 'Switch to English (EN)'}
+          >
+            {isEn ? 'EN' : 'PT'}
+          </button>
 
           {/* Alternar Tema */}
           <button
             type="button"
             onClick={onToggleTheme}
             className="p-2 rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
-            title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+            aria-label={
+              theme === 'dark'
+                ? isEn
+                  ? 'Enable light mode'
+                  : 'Ativar modo claro'
+                : isEn
+                  ? 'Enable dark mode'
+                  : 'Ativar modo escuro'
+            }
+            title={
+              theme === 'dark'
+                ? isEn
+                  ? 'Light mode'
+                  : 'Modo claro'
+                : isEn
+                  ? 'Dark mode'
+                  : 'Modo escuro'
+            }
           >
             {theme === 'dark' ? (
               <SunIcon className="w-4 h-4" />
@@ -141,7 +176,15 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               className="sm:hidden p-2 rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-              aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu de navegação'}
+              aria-label={
+                mobileMenuOpen
+                  ? isEn
+                    ? 'Close menu'
+                    : 'Fechar menu'
+                  : isEn
+                    ? 'Open navigation menu'
+                    : 'Abrir menu de navegação'
+              }
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
@@ -183,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Menu Dropdown Mobile */}
       {user && mobileMenuOpen && (
         <nav className="sm:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 space-y-1 animate-fade-in">
-          {NAV_ITEMS.map(({ id, label }) => {
+          {navItems.map(({ id, label }) => {
             const isActive = page === id;
             return (
               <button
@@ -217,7 +260,7 @@ export const Header: React.FC<HeaderProps> = ({
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
-                  alt={user.displayName || 'Usuário'}
+                  alt={user.displayName || (isEn ? 'User' : 'Usuário')}
                   className="w-6 h-6 rounded-full object-cover flex-shrink-0"
                   referrerPolicy="no-referrer"
                 />
@@ -239,7 +282,7 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline cursor-pointer flex-shrink-0"
             >
-              Sair
+              {isEn ? 'Sign out' : 'Sair'}
             </button>
           </div>
         </nav>

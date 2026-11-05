@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { ShoppingItem } from '../types';
+import { useLanguage } from '../lib/i18n';
 
 interface CategoryPieChartProps {
   items: ShoppingItem[];
@@ -26,19 +27,20 @@ const SLICE_COLORS = [
   '#84cc16', // lime-500
 ];
 
-const formatCurrency = (value: number) =>
-  value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
 export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const { language, formatCurrency } = useLanguage();
+  const isEn = language === 'en';
+
+  const uncategorizedLabel = isEn ? 'Uncategorized' : 'Sem categoria';
 
   const { slices, grandTotal } = useMemo(() => {
     const totalsByCat = new Map<string, { value: number; count: number }>();
 
     for (const item of items) {
       const subtotal = item.quantity * item.price;
-      const catName = item.category?.trim() || 'Sem categoria';
+      const catName = item.category?.trim() || uncategorizedLabel;
       const current = totalsByCat.get(catName) || { value: 0, count: 0 };
       totalsByCat.set(catName, {
         value: current.value + subtotal,
@@ -63,7 +65,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
     );
 
     return { slices: computedSlices, grandTotal: total };
-  }, [items]);
+  }, [items, uncategorizedLabel]);
 
   // Cálculo dos arcos do gráfico pizza/donut em SVG
   const radius = 70;
@@ -73,6 +75,9 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
   const activeSlice = hoveredCategory
     ? slices.find((s) => s.category === hoveredCategory)
     : null;
+
+  const formatPct = (pct: number) =>
+    isEn ? `${pct.toFixed(1)}%` : `${pct.toFixed(1).replace('.', ',')}%`;
 
   return (
     <div className="pt-2">
@@ -102,8 +107,12 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
           </svg>
           <span>
             {isOpen
-              ? 'Ocultar gráfico por categoria'
-              : 'Gerar gráfico por categoria'}
+              ? isEn
+                ? 'Hide category chart'
+                : 'Ocultar gráfico por categoria'
+              : isEn
+                ? 'Show category chart'
+                : 'Gerar gráfico por categoria'}
           </span>
         </button>
       </div>
@@ -113,10 +122,12 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
           <div className="flex items-center justify-between gap-2 mb-4">
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Gastos por Categoria
+                {isEn ? 'Spending by Category' : 'Gastos por Categoria'}
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Distribuição proporcional do valor dos itens da lista
+                {isEn
+                  ? 'Proportional breakdown of item costs in your list'
+                  : 'Distribuição proporcional do valor dos itens da lista'}
               </p>
             </div>
           </div>
@@ -124,10 +135,14 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
           {grandTotal === 0 ? (
             <div className="py-8 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
               <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                Ainda não há valores preenchidos na lista.
+                {isEn
+                  ? 'No prices entered in the list yet.'
+                  : 'Ainda não há valores preenchidos na lista.'}
               </p>
               <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-                Informe o preço de pelo menos um produto acima para gerar o gráfico.
+                {isEn
+                  ? 'Enter the price of at least one item above to generate the chart.'
+                  : 'Informe o preço de pelo menos um produto acima para gerar o gráfico.'}
               </p>
             </div>
           ) : (
@@ -188,7 +203,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
                     </span>
                     {activeSlice && (
                       <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 tabular-nums">
-                        {activeSlice.percentage.toFixed(1).replace('.', ',')}%
+                        {formatPct(activeSlice.percentage)}
                       </span>
                     )}
                   </div>
@@ -228,7 +243,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
                           {formatCurrency(slice.value)}
                         </span>
                         <span className="text-xs text-zinc-500 dark:text-zinc-400 w-12 text-right">
-                          {slice.percentage.toFixed(1).replace('.', ',')}%
+                          {formatPct(slice.percentage)}
                         </span>
                       </div>
                     </div>
@@ -242,4 +257,3 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
     </div>
   );
 };
-
