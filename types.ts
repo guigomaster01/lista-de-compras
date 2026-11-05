@@ -1,4 +1,4 @@
-export type Language = 'pt' | 'en';
+export type Language = 'pt' | 'en' | 'es' | 'zh';
 
 export type PageType = 'list' | 'categories' | 'about' | 'donation';
 

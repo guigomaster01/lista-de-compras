@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CopyIcon } from './icons/CopyIcon';
 import { useLanguage } from '../lib/i18n';
+import type { Language } from '../types';
 
 interface MonthlyBarProps {
   monthKey: string;
@@ -20,6 +21,65 @@ const shiftMonth = (monthKey: string, delta: number): string => {
   return `${nextYear}-${nextMonth}`;
 };
 
+const MONTHLY_COPY: Record<
+  Language,
+  {
+    viewingShared: (owner?: string) => string;
+    backToMyLists: string;
+    prevMonth: string;
+    selectMonth: string;
+    nextMonth: string;
+    copyTitle: string;
+    copied: string;
+    shareList: string;
+  }
+> = {
+  pt: {
+    viewingShared: (owner) =>
+      `Visualizando lista compartilhada${owner ? ` de ${owner}` : ''} (`,
+    backToMyLists: 'Voltar para minhas listas',
+    prevMonth: 'Mês anterior',
+    selectMonth: 'Selecionar mês da lista',
+    nextMonth: 'Próximo mês',
+    copyTitle: 'Copiar link único para compartilhar esta lista',
+    copied: 'Link copiado!',
+    shareList: 'Compartilhar Lista',
+  },
+  en: {
+    viewingShared: (owner) =>
+      `Viewing shared list${owner ? ` by ${owner}` : ''} (`,
+    backToMyLists: 'Back to my lists',
+    prevMonth: 'Previous month',
+    selectMonth: 'Select list month',
+    nextMonth: 'Next month',
+    copyTitle: 'Copy unique link to share this list',
+    copied: 'Link copied!',
+    shareList: 'Share List',
+  },
+  es: {
+    viewingShared: (owner) =>
+      `Viendo lista compartida${owner ? ` de ${owner}` : ''} (`,
+    backToMyLists: 'Volver a mis listas',
+    prevMonth: 'Mes anterior',
+    selectMonth: 'Seleccionar mes de la lista',
+    nextMonth: 'Mes siguiente',
+    copyTitle: 'Copiar enlace único para compartir esta lista',
+    copied: '¡Enlace copiado!',
+    shareList: 'Compartir Lista',
+  },
+  zh: {
+    viewingShared: (owner) =>
+      `正在查看${owner ? ` ${owner} 的` : ''}共享清单 (`,
+    backToMyLists: '返回我的清单',
+    prevMonth: '上个月',
+    selectMonth: '选择清单月份',
+    nextMonth: '下个月',
+    copyTitle: '复制专属链接以共享此清单',
+    copied: '链接已复制！',
+    shareList: '共享清单',
+  },
+};
+
 export const MonthlyBar: React.FC<MonthlyBarProps> = ({
   monthKey,
   onChangeMonth,
@@ -30,7 +90,7 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const { language, formatMonthLabel } = useLanguage();
-  const isEn = language === 'en';
+  const t = MONTHLY_COPY[language];
 
   const shareUrl = `${window.location.origin}${window.location.pathname}?lista=${shareId}`;
 
@@ -48,9 +108,7 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
           <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
             <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
             <span>
-              {isEn
-                ? `Viewing shared list${sharedOwnerName ? ` by ${sharedOwnerName}` : ''} (`
-                : `Visualizando lista compartilhada${sharedOwnerName ? ` de ${sharedOwnerName}` : ''} (`}
+              {t.viewingShared(sharedOwnerName)}
               <strong>{formatMonthLabel(monthKey)}</strong>)
             </span>
           </div>
@@ -59,7 +117,7 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
             onClick={onExitSharedView}
             className="font-medium text-zinc-900 dark:text-zinc-100 underline underline-offset-2 hover:opacity-80 cursor-pointer"
           >
-            {isEn ? 'Back to my lists' : 'Voltar para minhas listas'}
+            {t.backToMyLists}
           </button>
         </div>
       )}
@@ -72,8 +130,8 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
               type="button"
               onClick={() => onChangeMonth(shiftMonth(monthKey, -1))}
               className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-              aria-label={isEn ? 'Previous month' : 'Mês anterior'}
-              title={isEn ? 'Previous month' : 'Mês anterior'}
+              aria-label={t.prevMonth}
+              title={t.prevMonth}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -83,7 +141,7 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
 
           <div className="flex items-center gap-2">
             <label htmlFor="month-picker" className="sr-only">
-              {isEn ? 'Select list month' : 'Selecionar mês da lista'}
+              {t.selectMonth}
             </label>
             <input
               id="month-picker"
@@ -105,8 +163,8 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
               type="button"
               onClick={() => onChangeMonth(shiftMonth(monthKey, 1))}
               className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-              aria-label={isEn ? 'Next month' : 'Próximo mês'}
-              title={isEn ? 'Next month' : 'Próximo mês'}
+              aria-label={t.nextMonth}
+              title={t.nextMonth}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -121,22 +179,10 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
             type="button"
             onClick={handleCopyShareLink}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-            title={
-              isEn
-                ? 'Copy unique link to share this list'
-                : 'Copiar link único para compartilhar esta lista'
-            }
+            title={t.copyTitle}
           >
             <CopyIcon className="w-3.5 h-3.5" />
-            <span>
-              {copied
-                ? isEn
-                  ? 'Link copied!'
-                  : 'Link copiado!'
-                : isEn
-                  ? 'Share List'
-                  : 'Compartilhar Lista'}
-            </span>
+            <span>{copied ? t.copied : t.shareList}</span>
           </button>
         </div>
       </div>

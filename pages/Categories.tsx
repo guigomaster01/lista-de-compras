@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { getProductCatalog } from '../data/catalog';
 import { useLanguage } from '../lib/i18n';
-import type { ShoppingItem } from '../types';
+import type { ShoppingItem, Language } from '../types';
 import { PlusIcon } from '../components/icons/PlusIcon';
 
 interface CategoriesProps {
@@ -9,6 +9,80 @@ interface CategoriesProps {
   onToggleCatalogItem: (name: string, category: string) => void;
   onGoToList: () => void;
 }
+
+const CATEGORIES_COPY: Record<
+  Language,
+  {
+    title: string;
+    subtitlePart1: string;
+    listTabName: string;
+    subtitlePart2: string;
+    viewList: (count: number) => string;
+    searchPlaceholder: string;
+    all: (count: number) => string;
+    noProductsFound: (query: string) => string;
+    tryAnotherTerm: string;
+    inList: (count: number) => string;
+  }
+> = {
+  pt: {
+    title: 'Planejamento por Categoria',
+    subtitlePart1:
+      'Selecione o que precisa comprar antes de ir ao mercado. No mercado, informe a quantidade e o valor na aba ',
+    listTabName: 'Lista',
+    subtitlePart2: ' conforme encontrar os produtos.',
+    viewList: (count) => `Ver lista (${count})`,
+    searchPlaceholder:
+      'Buscar produto ou categoria (ex: leite, frutas, limpeza)...',
+    all: (count) => `Todas (${count})`,
+    noProductsFound: (q) => `Nenhum produto encontrado para “${q}”`,
+    tryAnotherTerm:
+      'Tente outro termo ou adicione um item personalizado diretamente na aba Lista.',
+    inList: (count) => `${count} na lista`,
+  },
+  en: {
+    title: 'Plan by Category',
+    subtitlePart1:
+      'Select what you need before heading to the store. Once there, enter the quantity and price in the ',
+    listTabName: 'List',
+    subtitlePart2: ' tab as you pick up each item.',
+    viewList: (count) => `View list (${count})`,
+    searchPlaceholder:
+      'Search product or category (e.g. milk, produce, cleaning)...',
+    all: (count) => `All (${count})`,
+    noProductsFound: (q) => `No products found for “${q}”`,
+    tryAnotherTerm:
+      'Try another search term or add a custom item directly in the List tab.',
+    inList: (count) => `${count} in list`,
+  },
+  es: {
+    title: 'Planificación por Categoría',
+    subtitlePart1:
+      'Selecciona lo que necesitas comprar antes de ir al supermercado. En la tienda, indica la cantidad y el precio en la pestaña ',
+    listTabName: 'Lista',
+    subtitlePart2: ' a medida que encuentres los productos.',
+    viewList: (count) => `Ver lista (${count})`,
+    searchPlaceholder:
+      'Buscar producto o categoría (ej: leche, frutas, limpieza)...',
+    all: (count) => `Todas (${count})`,
+    noProductsFound: (q) => `No se encontraron productos para “${q}”`,
+    tryAnotherTerm:
+      'Prueba con otro término o añade un artículo personalizado directamente en la pestaña Lista.',
+    inList: (count) => `${count} en la lista`,
+  },
+  zh: {
+    title: '按分类目录规划采购',
+    subtitlePart1: '出发去超市前先勾选需要购买的商品。到达超市后，在“',
+    listTabName: '清单',
+    subtitlePart2: '”页面中边拿商品边输入数量与单价。',
+    viewList: (count) => `查看清单 (${count})`,
+    searchPlaceholder: '搜索商品或分类（如：牛奶、水果、清洁）...',
+    all: (count) => `全部 (${count})`,
+    noProductsFound: (q) => `未找到与“${q}”相关的商品`,
+    tryAnotherTerm: '请尝试其它关键词，或直接在“清单”页面添加自定义商品。',
+    inList: (count) => `已选 ${count} 件`,
+  },
+};
 
 export const Categories: React.FC<CategoriesProps> = ({
   items,
@@ -18,7 +92,7 @@ export const Categories: React.FC<CategoriesProps> = ({
   const [search, setSearch] = useState('');
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
   const { language } = useLanguage();
-  const isEn = language === 'en';
+  const t = CATEGORIES_COPY[language];
 
   const catalog = useMemo(() => getProductCatalog(language), [language]);
 
@@ -64,18 +138,12 @@ export const Categories: React.FC<CategoriesProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              {isEn ? 'Plan by Category' : 'Planejamento por Categoria'}
+              {t.title}
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              {isEn ? (
-                <>
-                  Select what you need before heading to the store. Once there, enter the quantity and price in the <strong>List</strong> tab as you pick up each item.
-                </>
-              ) : (
-                <>
-                  Selecione o que precisa comprar antes de ir ao mercado. No mercado, informe a quantidade e o valor na aba <strong>Lista</strong> conforme encontrar os produtos.
-                </>
-              )}
+              {t.subtitlePart1}
+              <strong>{t.listTabName}</strong>
+              {t.subtitlePart2}
             </p>
           </div>
 
@@ -85,9 +153,7 @@ export const Categories: React.FC<CategoriesProps> = ({
               onClick={onGoToList}
               className="flex-shrink-0 inline-flex items-center justify-center gap-2 px-3.5 py-2 text-xs font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
             >
-              <span>
-                {isEn ? `View list (${items.length})` : `Ver lista (${items.length})`}
-              </span>
+              <span>{t.viewList(items.length)}</span>
               <span aria-hidden="true">&rarr;</span>
             </button>
           )}
@@ -98,11 +164,7 @@ export const Categories: React.FC<CategoriesProps> = ({
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={
-              isEn
-                ? 'Search product or category (e.g. milk, produce, cleaning)...'
-                : 'Buscar produto ou categoria (ex: leite, frutas, limpeza)...'
-            }
+            placeholder={t.searchPlaceholder}
             className="w-full h-9 px-3 text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
           />
 
@@ -116,7 +178,7 @@ export const Categories: React.FC<CategoriesProps> = ({
                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
             >
-              {isEn ? `All (${catalog.length})` : `Todas (${catalog.length})`}
+              {t.all(catalog.length)}
             </button>
             {catalog.map((cat) => {
               const shortName = cleanCategoryName(cat.title);
@@ -143,15 +205,9 @@ export const Categories: React.FC<CategoriesProps> = ({
       {filteredCatalog.length === 0 ? (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl py-12 px-4 text-center">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {isEn
-              ? `No products found for “${search}”`
-              : `Nenhum produto encontrado para “${search}”`}
+            {t.noProductsFound(search)}
           </p>
-          <p className="text-xs text-zinc-500 mt-1">
-            {isEn
-              ? 'Try another search term or add a custom item directly in the List tab.'
-              : 'Tente outro termo ou adicione um item personalizado diretamente na aba Lista.'}
-          </p>
+          <p className="text-xs text-zinc-500 mt-1">{t.tryAnotherTerm}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -181,9 +237,7 @@ export const Categories: React.FC<CategoriesProps> = ({
 
                   {selectedInCategory > 0 && (
                     <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 tabular-nums">
-                      {isEn
-                        ? `${selectedInCategory} in list`
-                        : `${selectedInCategory} na lista`}
+                      {t.inList(selectedInCategory)}
                     </span>
                   )}
                 </div>

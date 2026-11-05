@@ -27,7 +27,43 @@ import type {
   PageType,
   MonthlyShoppingList,
   PreviousPriceInfo,
+  Language,
 } from './types';
+
+const APP_COPY: Record<
+  Language,
+  {
+    userFallback: string;
+    localAccount: string;
+    authErrorFallback: string;
+    othersCategory: string;
+  }
+> = {
+  pt: {
+    userFallback: 'Usuário',
+    localAccount: 'Conta Local',
+    authErrorFallback: 'Falha ao autenticar com o Google.',
+    othersCategory: 'Outros',
+  },
+  en: {
+    userFallback: 'User',
+    localAccount: 'Local Account',
+    authErrorFallback: 'Failed to authenticate with Google.',
+    othersCategory: 'Others',
+  },
+  es: {
+    userFallback: 'Usuario',
+    localAccount: 'Cuenta Local',
+    authErrorFallback: 'Error al autenticar con Google.',
+    othersCategory: 'Otros',
+  },
+  zh: {
+    userFallback: '用户',
+    localAccount: '本地账户',
+    authErrorFallback: 'Google 登录验证失败。',
+    othersCategory: '其它',
+  },
+};
 
 const getCurrentMonthKey = (): string => {
   const now = new Date();
@@ -45,7 +81,7 @@ const generateUniqueShareId = (): string => {
 
 const AppContent: React.FC = () => {
   const { language } = useLanguage();
-  const isEn = language === 'en';
+  const t = APP_COPY[language];
 
   const [user, setUser] = useState<AuthUserDisplay | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(isFirebaseConfigured);
@@ -206,14 +242,14 @@ const AppContent: React.FC = () => {
     return {
       id: generateUniqueShareId(),
       ownerId: user?.uid || 'local-demo-user',
-      ownerName: user?.displayName || user?.email || (isEn ? 'User' : 'Usuário'),
+      ownerName: user?.displayName || user?.email || t.userFallback,
       ownerPhoto: user?.photoURL || null,
       monthKey,
       items: [],
       createdAt: nowIso,
       updatedAt: nowIso,
     };
-  }, [sharedListIdParam, sharedListDoc, monthlyLists, monthKey, user, isEn]);
+  }, [sharedListIdParam, sharedListDoc, monthlyLists, monthKey, user, t.userFallback]);
 
   // Garante que a lista do mês corrente tenha ID fixo salvo no estado quando o usuário logar
   useEffect(() => {
@@ -263,9 +299,7 @@ const AppContent: React.FC = () => {
         ...activeList,
         ownerId: activeList.ownerId || user?.uid || 'local-demo-user',
         ownerName:
-          activeList.ownerName ||
-          user?.displayName ||
-          (isEn ? 'User' : 'Usuário'),
+          activeList.ownerName || user?.displayName || t.userFallback,
         items: updatedItems,
         updatedAt: new Date().toISOString(),
       };
@@ -287,7 +321,7 @@ const AppContent: React.FC = () => {
         }
       }
     },
-    [activeList, sharedListIdParam, sharedListDoc, user, isEn]
+    [activeList, sharedListIdParam, sharedListDoc, user, t.userFallback]
   );
 
   const handleImportPreviousMonth = () => {
@@ -311,11 +345,7 @@ const AppContent: React.FC = () => {
       await signInWithPopup(auth, googleProvider);
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : isEn
-            ? 'Failed to authenticate with Google.'
-            : 'Falha ao autenticar com o Google.';
+        err instanceof Error ? err.message : t.authErrorFallback;
       setAuthError(message);
     } finally {
       setAuthLoading(false);
@@ -325,7 +355,7 @@ const AppContent: React.FC = () => {
   const handleContinueLocalDemo = () => {
     setUser({
       uid: 'local-demo-user',
-      displayName: isEn ? 'Local Account' : 'Conta Local',
+      displayName: t.localAccount,
       email: null,
       photoURL: null,
     });
@@ -431,8 +461,8 @@ const AppContent: React.FC = () => {
         return a.name.localeCompare(b.name);
       }
       if (sortBy === 'category') {
-        const catA = a.category || (isEn ? 'Others' : 'Outros');
-        const catB = b.category || (isEn ? 'Others' : 'Outros');
+        const catA = a.category || t.othersCategory;
+        const catB = b.category || t.othersCategory;
         const catDiff = catA.localeCompare(catB);
         return catDiff !== 0 ? catDiff : a.name.localeCompare(b.name);
       }
@@ -445,7 +475,7 @@ const AppContent: React.FC = () => {
     }
 
     return [...uncompleted, ...completed];
-  }, [items, sortBy, isEn]);
+  }, [items, sortBy, t.othersCategory]);
 
   const totalPrice = useMemo(() => {
     return items

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import type { ShoppingItem } from '../types';
+import type { ShoppingItem, Language } from '../types';
 import { useLanguage } from '../lib/i18n';
 
 interface CategoryPieChartProps {
@@ -27,20 +27,73 @@ const SLICE_COLORS = [
   '#84cc16', // lime-500
 ];
 
+const CHART_COPY: Record<
+  Language,
+  {
+    uncategorized: string;
+    hideChart: string;
+    showChart: string;
+    title: string;
+    subtitle: string;
+    emptyTitle: string;
+    emptySubtitle: string;
+    total: string;
+  }
+> = {
+  pt: {
+    uncategorized: 'Sem categoria',
+    hideChart: 'Ocultar gráfico por categoria',
+    showChart: 'Gerar gráfico por categoria',
+    title: 'Gastos por Categoria',
+    subtitle: 'Distribuição proporcional do valor dos itens da lista',
+    emptyTitle: 'Ainda não há valores preenchidos na lista.',
+    emptySubtitle: 'Informe o preço de pelo menos um produto acima para gerar o gráfico.',
+    total: 'Total',
+  },
+  en: {
+    uncategorized: 'Uncategorized',
+    hideChart: 'Hide category chart',
+    showChart: 'Show category chart',
+    title: 'Spending by Category',
+    subtitle: 'Proportional breakdown of item costs in your list',
+    emptyTitle: 'No prices entered in the list yet.',
+    emptySubtitle: 'Enter the price of at least one item above to generate the chart.',
+    total: 'Total',
+  },
+  es: {
+    uncategorized: 'Sin categoría',
+    hideChart: 'Ocultar gráfico por categoría',
+    showChart: 'Generar gráfico por categoría',
+    title: 'Gastos por Categoría',
+    subtitle: 'Distribución proporcional del valor de los productos de la lista',
+    emptyTitle: 'Aún no hay precios ingresados en la lista.',
+    emptySubtitle: 'Ingresa el precio de al menos un producto arriba para generar el gráfico.',
+    total: 'Total',
+  },
+  zh: {
+    uncategorized: '未分类',
+    hideChart: '隐藏分类消费图表',
+    showChart: '生成分类消费图表',
+    title: '各分类消费占比',
+    subtitle: '按清单商品金额统计的各分类支出比例',
+    emptyTitle: '清单中尚未填写商品价格。',
+    emptySubtitle: '请在上方至少输入一件商品的单价以生成图表。',
+    total: '总计',
+  },
+};
+
 export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const { language, formatCurrency } = useLanguage();
-  const isEn = language === 'en';
-
-  const uncategorizedLabel = isEn ? 'Uncategorized' : 'Sem categoria';
+  const { language, formatCurrency, formatPercent } = useLanguage();
+  const t = CHART_COPY[language];
 
   const { slices, grandTotal } = useMemo(() => {
     const totalsByCat = new Map<string, { value: number; count: number }>();
 
     for (const item of items) {
       const subtotal = item.quantity * item.price;
-      const catName = item.category?.trim() || uncategorizedLabel;
+      const catName = item.category?.trim() || t.uncategorized;
       const current = totalsByCat.get(catName) || { value: 0, count: 0 };
       totalsByCat.set(catName, {
         value: current.value + subtotal,
@@ -65,9 +118,8 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
     );
 
     return { slices: computedSlices, grandTotal: total };
-  }, [items, uncategorizedLabel]);
+  }, [items, t.uncategorized]);
 
-  // Cálculo dos arcos do gráfico pizza/donut em SVG
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   let cumulativePercent = 0;
@@ -75,9 +127,6 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
   const activeSlice = hoveredCategory
     ? slices.find((s) => s.category === hoveredCategory)
     : null;
-
-  const formatPct = (pct: number) =>
-    isEn ? `${pct.toFixed(1)}%` : `${pct.toFixed(1).replace('.', ',')}%`;
 
   return (
     <div className="pt-2">
@@ -105,15 +154,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
               d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z"
             />
           </svg>
-          <span>
-            {isOpen
-              ? isEn
-                ? 'Hide category chart'
-                : 'Ocultar gráfico por categoria'
-              : isEn
-                ? 'Show category chart'
-                : 'Gerar gráfico por categoria'}
-          </span>
+          <span>{isOpen ? t.hideChart : t.showChart}</span>
         </button>
       </div>
 
@@ -122,12 +163,10 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
           <div className="flex items-center justify-between gap-2 mb-4">
             <div>
               <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {isEn ? 'Spending by Category' : 'Gastos por Categoria'}
+                {t.title}
               </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {isEn
-                  ? 'Proportional breakdown of item costs in your list'
-                  : 'Distribuição proporcional do valor dos itens da lista'}
+                {t.subtitle}
               </p>
             </div>
           </div>
@@ -135,14 +174,10 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
           {grandTotal === 0 ? (
             <div className="py-8 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
               <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                {isEn
-                  ? 'No prices entered in the list yet.'
-                  : 'Ainda não há valores preenchidos na lista.'}
+                {t.emptyTitle}
               </p>
               <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-                {isEn
-                  ? 'Enter the price of at least one item above to generate the chart.'
-                  : 'Informe o preço de pelo menos um produto acima para gerar o gráfico.'}
+                {t.emptySubtitle}
               </p>
             </div>
           ) : (
@@ -194,7 +229,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
                   {/* Centro do Gráfico */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
                     <span className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate max-w-[110px]">
-                      {activeSlice ? activeSlice.category : 'Total'}
+                      {activeSlice ? activeSlice.category : t.total}
                     </span>
                     <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums mt-0.5">
                       {formatCurrency(
@@ -203,7 +238,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
                     </span>
                     {activeSlice && (
                       <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 tabular-nums">
-                        {formatPct(activeSlice.percentage)}
+                        {formatPercent(activeSlice.percentage)}
                       </span>
                     )}
                   </div>
@@ -243,7 +278,7 @@ export const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ items }) => 
                           {formatCurrency(slice.value)}
                         </span>
                         <span className="text-xs text-zinc-500 dark:text-zinc-400 w-12 text-right">
-                          {formatPct(slice.percentage)}
+                          {formatPercent(slice.percentage)}
                         </span>
                       </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { ShoppingItem, PreviousPriceInfo } from '../types';
+import type { ShoppingItem, PreviousPriceInfo, Language } from '../types';
 import { TrashIcon } from './icons/TrashIcon';
 import { CategoryPieChart } from './CategoryPieChart';
 import { useLanguage } from '../lib/i18n';
@@ -23,49 +23,173 @@ interface ShoppingListProps {
   onGoToCategories: () => void;
 }
 
+const LIST_COPY: Record<
+  Language,
+  {
+    lastBadge: (month: string, price: string) => string;
+    costInMonth: (month: string, price: string) => string;
+    samePriceAs: (month: string, price: string) => string;
+    enterAtStore: string;
+    subtotal: string;
+    qtyOf: (name: string) => string;
+    qtyShort: string;
+    unitPriceOf: (name: string) => string;
+    pricePlaceholder: string;
+    removeAria: (name: string) => string;
+    emptyTitle: string;
+    emptyDesc: string;
+    buildByCategories: string;
+    repeatLastMonth: string;
+    remainingPending: string;
+    inCartChecked: string;
+    totalPurchase: string;
+    sortByLabel: string;
+    sortCategory: string;
+    sortDefault: string;
+    sortName: string;
+    plusCategories: string;
+    clearList: string;
+  }
+> = {
+  pt: {
+    lastBadge: (month, price) => `Último (${month}): ${price}`,
+    costInMonth: (month, price) => `Em ${month} custava ${price}`,
+    samePriceAs: (month, price) => `= Mesmo valor de ${month} (${price})`,
+    enterAtStore: 'Informe qtd. e valor ao encontrar no mercado',
+    subtotal: 'Subtotal',
+    qtyOf: (name) => `Quantidade de ${name}`,
+    qtyShort: 'Qtd',
+    unitPriceOf: (name) => `Preço unitário de ${name}`,
+    pricePlaceholder: '0,00',
+    removeAria: (name) => `Remover ${name}`,
+    emptyTitle: 'Sua lista de compras deste mês está vazia',
+    emptyDesc:
+      'Escolha produtos prontos na aba de categorias, importe os produtos do mês anterior ou adicione um item avulso acima.',
+    buildByCategories: 'Montar lista por Categorias',
+    repeatLastMonth: 'Repetir itens do mês anterior',
+    remainingPending: 'Falta pegar (Pendente)',
+    inCartChecked: 'No carrinho (Marcados)',
+    totalPurchase: 'Total da compra',
+    sortByLabel: 'Ordenar:',
+    sortCategory: 'Por Categoria',
+    sortDefault: 'Ordem de inclusão',
+    sortName: 'Alfabética (A-Z)',
+    plusCategories: '+ Categorias',
+    clearList: 'Limpar lista',
+  },
+  en: {
+    lastBadge: (month, price) => `Last (${month}): ${price}`,
+    costInMonth: (month, price) => `In ${month} it cost ${price}`,
+    samePriceAs: (month, price) => `= Same price as ${month} (${price})`,
+    enterAtStore: 'Enter qty & price when you find it in the store',
+    subtotal: 'Subtotal',
+    qtyOf: (name) => `Quantity of ${name}`,
+    qtyShort: 'Qty',
+    unitPriceOf: (name) => `Unit price of ${name}`,
+    pricePlaceholder: '0.00',
+    removeAria: (name) => `Remove ${name}`,
+    emptyTitle: 'Your shopping list for this month is empty',
+    emptyDesc:
+      'Pick ready-made items from the Categories tab, import last month’s items, or add a custom item above.',
+    buildByCategories: 'Build list by Categories',
+    repeatLastMonth: 'Repeat last month’s items',
+    remainingPending: 'Remaining (Pending)',
+    inCartChecked: 'In cart (Checked)',
+    totalPurchase: 'Total purchase',
+    sortByLabel: 'Sort by:',
+    sortCategory: 'By Category',
+    sortDefault: 'Date Added',
+    sortName: 'Alphabetical (A-Z)',
+    plusCategories: '+ Categories',
+    clearList: 'Clear list',
+  },
+  es: {
+    lastBadge: (month, price) => `Último (${month}): ${price}`,
+    costInMonth: (month, price) => `En ${month} costaba ${price}`,
+    samePriceAs: (month, price) => `= Mismo precio que en ${month} (${price})`,
+    enterAtStore: 'Indica cant. y precio al encontrarlo en la tienda',
+    subtotal: 'Subtotal',
+    qtyOf: (name) => `Cantidad de ${name}`,
+    qtyShort: 'Cant',
+    unitPriceOf: (name) => `Precio unitario de ${name}`,
+    pricePlaceholder: '0,00',
+    removeAria: (name) => `Eliminar ${name}`,
+    emptyTitle: 'Tu lista de compras de este mes está vacía',
+    emptyDesc:
+      'Elige productos listos en la pestaña de categorías, importa los productos del mes anterior o añade un artículo arriba.',
+    buildByCategories: 'Armar lista por Categorías',
+    repeatLastMonth: 'Repetir productos del mes anterior',
+    remainingPending: 'Por comprar (Pendiente)',
+    inCartChecked: 'En el carrito (Marcados)',
+    totalPurchase: 'Total de la compra',
+    sortByLabel: 'Ordenar:',
+    sortCategory: 'Por Categoría',
+    sortDefault: 'Orden de inclusión',
+    sortName: 'Alfabético (A-Z)',
+    plusCategories: '+ Categorías',
+    clearList: 'Vaciar lista',
+  },
+  zh: {
+    lastBadge: (month, price) => `上次 (${month})：${price}`,
+    costInMonth: (month, price) => `${month} 价格为 ${price}`,
+    samePriceAs: (month, price) => `= 与 ${month} 价格相同 (${price})`,
+    enterAtStore: '在超市找到商品后输入数量与单价',
+    subtotal: '小计',
+    qtyOf: (name) => `${name} 的数量`,
+    qtyShort: '数量',
+    unitPriceOf: (name) => `${name} 的单价`,
+    pricePlaceholder: '0.00',
+    removeAria: (name) => `移除 ${name}`,
+    emptyTitle: '您本月的购物清单为空',
+    emptyDesc:
+      '可在“分类目录”中快速勾选常用商品、一键导入上月商品，或在上方添加自定义商品。',
+    buildByCategories: '按分类目录选购',
+    repeatLastMonth: '复用上月商品',
+    remainingPending: '待购合计（未勾选）',
+    inCartChecked: '购物车内（已勾选）',
+    totalPurchase: '预计总金额',
+    sortByLabel: '排序：',
+    sortCategory: '按商品分类',
+    sortDefault: '按添加顺序',
+    sortName: '按名称排序 (A-Z)',
+    plusCategories: '+ 分类目录',
+    clearList: '清空清单',
+  },
+};
+
 const PriceComparisonBadge: React.FC<{
   currentPrice: number;
   prevInfo?: PreviousPriceInfo;
 }> = ({ currentPrice, prevInfo }) => {
-  const { language, formatCurrency, formatShortMonth } = useLanguage();
-  const isEn = language === 'en';
+  const { language, formatCurrency, formatShortMonth, formatPercent } = useLanguage();
+  const t = LIST_COPY[language];
 
   if (!prevInfo || prevInfo.price <= 0) return null;
 
   const shortMonth = formatShortMonth(prevInfo.monthKey);
+  const formattedPrevPrice = formatCurrency(prevInfo.price);
 
-  // Se ainda não digitou o preço deste mês, mostra o último preço pago como referência
   if (currentPrice <= 0) {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800/90 text-zinc-600 dark:text-zinc-400 tabular-nums">
-        <span>
-          {isEn
-            ? `Last (${shortMonth}): ${formatCurrency(prevInfo.price)}`
-            : `Último (${shortMonth}): ${formatCurrency(prevInfo.price)}`}
-        </span>
+        <span>{t.lastBadge(shortMonth, formattedPrevPrice)}</span>
       </span>
     );
   }
 
   const diff = currentPrice - prevInfo.price;
   const pct = (diff / prevInfo.price) * 100;
-  const formattedPct = isEn
-    ? pct.toFixed(1)
-    : pct.toFixed(1).replace('.', ',');
+  const formattedPct = formatPercent(pct);
 
   if (diff > 0.004) {
     return (
       <span
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border border-red-200/70 dark:border-red-900/60 tabular-nums"
-        title={
-          isEn
-            ? `In ${shortMonth} it cost ${formatCurrency(prevInfo.price)}`
-            : `Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`
-        }
+        title={t.costInMonth(shortMonth, formattedPrevPrice)}
       >
         <span aria-hidden="true">&uarr;</span>
         <span>
-          +{formatCurrency(diff)} (+{formattedPct}%) vs {shortMonth} ({formatCurrency(prevInfo.price)})
+          +{formatCurrency(diff)} (+{formattedPct}) vs {shortMonth} ({formattedPrevPrice})
         </span>
       </span>
     );
@@ -75,15 +199,11 @@ const PriceComparisonBadge: React.FC<{
     return (
       <span
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/70 dark:border-emerald-900/60 tabular-nums"
-        title={
-          isEn
-            ? `In ${shortMonth} it cost ${formatCurrency(prevInfo.price)}`
-            : `Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`
-        }
+        title={t.costInMonth(shortMonth, formattedPrevPrice)}
       >
         <span aria-hidden="true">&darr;</span>
         <span>
-          {formatCurrency(diff)} ({formattedPct}%) vs {shortMonth} ({formatCurrency(prevInfo.price)})
+          {formatCurrency(diff)} ({formattedPct}) vs {shortMonth} ({formattedPrevPrice})
         </span>
       </span>
     );
@@ -92,17 +212,9 @@ const PriceComparisonBadge: React.FC<{
   return (
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 tabular-nums"
-      title={
-        isEn
-          ? `In ${shortMonth} it cost ${formatCurrency(prevInfo.price)}`
-          : `Em ${shortMonth} custava ${formatCurrency(prevInfo.price)}`
-      }
+      title={t.costInMonth(shortMonth, formattedPrevPrice)}
     >
-      <span>
-        {isEn
-          ? `= Same price as ${shortMonth} (${formatCurrency(prevInfo.price)})`
-          : `= Mesmo valor de ${shortMonth} (${formatCurrency(prevInfo.price)})`}
-      </span>
+      <span>{t.samePriceAs(shortMonth, formattedPrevPrice)}</span>
     </span>
   );
 };
@@ -116,14 +228,15 @@ const ShoppingListItem: React.FC<{
   isExiting: boolean;
 }> = ({ item, prevInfo, onToggle, onUpdate, onRemove, isExiting }) => {
   const { language, formatCurrency, currencySymbol } = useLanguage();
-  const isEn = language === 'en';
+  const t = LIST_COPY[language];
+  const useDotDecimal = language === 'en' || language === 'zh';
 
   const animationClass = isExiting ? 'animate-fade-out-scale' : 'animate-fade-in-scale';
   const subtotal = item.quantity * item.price;
 
   const formatInputPrice = (val: number) => {
     if (val <= 0) return '';
-    return isEn ? val.toFixed(2) : val.toFixed(2).replace('.', ',');
+    return useDotDecimal ? val.toFixed(2) : val.toFixed(2).replace('.', ',');
   };
 
   const [priceInput, setPriceInput] = useState(() => formatInputPrice(item.price));
@@ -133,13 +246,13 @@ const ShoppingListItem: React.FC<{
     if (!isEditingPrice) {
       setPriceInput(
         item.price > 0
-          ? isEn
+          ? useDotDecimal
             ? item.price.toFixed(2)
             : item.price.toFixed(2).replace('.', ',')
           : ''
       );
     }
-  }, [item.price, isEditingPrice, isEn]);
+  }, [item.price, isEditingPrice, useDotDecimal]);
 
   const handlePriceChange = (val: string) => {
     setPriceInput(val);
@@ -201,10 +314,8 @@ const ShoppingListItem: React.FC<{
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               {item.price === 0
-                ? isEn
-                  ? 'Enter qty & price when you find it in the store'
-                  : 'Informe qtd. e valor ao encontrar no mercado'
-                : `Subtotal: ${formatCurrency(subtotal)}`}
+                ? t.enterAtStore
+                : `${t.subtotal}: ${formatCurrency(subtotal)}`}
             </span>
             <PriceComparisonBadge currentPrice={item.price} prevInfo={prevInfo} />
           </div>
@@ -215,10 +326,10 @@ const ShoppingListItem: React.FC<{
         <div className="flex items-center gap-2">
           <div className="flex items-center">
             <label htmlFor={`qty-${item.id}`} className="sr-only">
-              {isEn ? `Quantity of ${item.name}` : `Quantidade de ${item.name}`}
+              {t.qtyOf(item.name)}
             </label>
             <span className="text-xs text-zinc-400 dark:text-zinc-500 mr-1.5">
-              {isEn ? 'Qty' : 'Qtd'}
+              {t.qtyShort}
             </span>
             <input
               id={`qty-${item.id}`}
@@ -232,7 +343,7 @@ const ShoppingListItem: React.FC<{
 
           <div className="relative flex items-center">
             <label htmlFor={`price-${item.id}`} className="sr-only">
-              {isEn ? `Unit price of ${item.name}` : `Preço unitário de ${item.name}`}
+              {t.unitPriceOf(item.name)}
             </label>
             <span className="absolute left-2.5 text-xs text-zinc-400 dark:text-zinc-500 pointer-events-none">
               {currencySymbol}
@@ -241,7 +352,7 @@ const ShoppingListItem: React.FC<{
               id={`price-${item.id}`}
               type="text"
               inputMode="decimal"
-              placeholder={isEn ? '0.00' : '0,00'}
+              placeholder={t.pricePlaceholder}
               value={priceInput}
               onFocus={() => setIsEditingPrice(true)}
               onBlur={() => setIsEditingPrice(false)}
@@ -267,7 +378,7 @@ const ShoppingListItem: React.FC<{
           type="button"
           onClick={() => onRemove(item.id)}
           className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors cursor-pointer"
-          aria-label={isEn ? `Remove ${item.name}` : `Remover ${item.name}`}
+          aria-label={t.removeAria(item.name)}
         >
           <TrashIcon className="w-4 h-4" />
         </button>
@@ -293,20 +404,16 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   onGoToCategories,
 }) => {
   const { language, formatCurrency } = useLanguage();
-  const isEn = language === 'en';
+  const t = LIST_COPY[language];
 
   if (items.length === 0 && exitingItemIds.length === 0) {
     return (
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl py-12 px-4 text-center">
         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          {isEn
-            ? 'Your shopping list for this month is empty'
-            : 'Sua lista de compras deste mês está vazia'}
+          {t.emptyTitle}
         </p>
         <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1 max-w-md mx-auto">
-          {isEn
-            ? 'Pick ready-made items from the Categories tab, import last month’s items, or add a custom item above.'
-            : 'Escolha produtos prontos na aba de categorias, importe os produtos do mês anterior ou adicione um item avulso acima.'}
+          {t.emptyDesc}
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
           <button
@@ -314,7 +421,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
             onClick={onGoToCategories}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
           >
-            <span>{isEn ? 'Build list by Categories' : 'Montar lista por Categorias'}</span>
+            <span>{t.buildByCategories}</span>
             <span aria-hidden="true">&rarr;</span>
           </button>
 
@@ -324,7 +431,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               onClick={onImportPreviousMonth}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
             >
-              <span>{isEn ? 'Repeat last month’s items' : 'Repetir itens do mês anterior'}</span>
+              <span>{t.repeatLastMonth}</span>
             </button>
           )}
         </div>
@@ -337,7 +444,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
           <span className="block text-xs text-zinc-500 dark:text-zinc-400">
-            {isEn ? 'Remaining (Pending)' : 'Falta pegar (Pendente)'}
+            {t.remainingPending}
           </span>
           <span className="mt-1 block text-base font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
             {formatCurrency(totalPrice)}
@@ -346,7 +453,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
           <span className="block text-xs text-zinc-500 dark:text-zinc-400">
-            {isEn ? 'In cart (Checked)' : 'No carrinho (Marcados)'}
+            {t.inCartChecked}
           </span>
           <span className="mt-1 block text-base font-semibold text-zinc-900 dark:text-zinc-100 tabular-nums">
             {formatCurrency(completedTotal)}
@@ -355,7 +462,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
 
         <div className="col-span-2 sm:col-span-1 bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-zinc-100 rounded-xl p-3.5">
           <span className="block text-xs text-zinc-400 dark:text-zinc-600">
-            {isEn ? 'Total purchase' : 'Total da compra'}
+            {t.totalPurchase}
           </span>
           <span className="mt-1 block text-base font-semibold text-white dark:text-zinc-900 tabular-nums">
             {formatCurrency(totalPrice + completedTotal)}
@@ -370,7 +477,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               htmlFor="sort-select"
               className="text-xs font-medium text-zinc-500 dark:text-zinc-400"
             >
-              {isEn ? 'Sort by:' : 'Ordenar:'}
+              {t.sortByLabel}
             </label>
             <select
               id="sort-select"
@@ -378,9 +485,9 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               onChange={(e) => onSortChange(e.target.value as SortOption)}
               className="text-xs font-medium text-zinc-800 dark:text-zinc-200 bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10"
             >
-              <option value="category">{isEn ? 'By Category' : 'Por Categoria'}</option>
-              <option value="default">{isEn ? 'Date Added' : 'Ordem de inclusão'}</option>
-              <option value="name">{isEn ? 'Alphabetical (A-Z)' : 'Alfabética (A-Z)'}</option>
+              <option value="category">{t.sortCategory}</option>
+              <option value="default">{t.sortDefault}</option>
+              <option value="name">{t.sortName}</option>
             </select>
           </div>
 
@@ -390,7 +497,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
               onClick={onGoToCategories}
               className="text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
             >
-              {isEn ? '+ Categories' : '+ Categorias'}
+              {t.plusCategories}
             </button>
             {items.length > 0 && (
               <button
@@ -398,7 +505,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
                 onClick={onClearList}
                 className="text-xs font-medium text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 transition-colors cursor-pointer"
               >
-                {isEn ? 'Clear list' : 'Limpar lista'}
+                {t.clearList}
               </button>
             )}
           </div>
