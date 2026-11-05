@@ -3,10 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lista de Compras</title>
+
+  <!-- SEO Principal -->
+  <title>Lista de Compras de Supermercado Online Grátis | Compare Preços e Compartilhe</title>
+  <meta name="description" content="Organize sua lista de compras de supermercado online grátis. Compare preços mês a mês, some o total do carrinho em tempo real, filtre por categorias e compartilhe no WhatsApp." />
+  <meta name="keywords" content="lista de compras, lista de supermercado online, lista de compras grátis, comparar preços supermercado, controle de gastos mercado, lista de compras compartilhada whatsapp, grocery shopping list" />
+  <meta name="author" content="Vida de Pai" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="theme-color" content="#18181b" />
+
+  <!-- Canonical e Internacionalização (hreflang) -->
+  <link rel="canonical" id="canonical-link" href="https://compras.vidadepai.com.br/" />
+  <link rel="alternate" hreflang="pt-BR" href="https://compras.vidadepai.com.br/?lang=pt" />
+  <link rel="alternate" hreflang="en" href="https://compras.vidadepai.com.br/?lang=en" />
+  <link rel="alternate" hreflang="es" href="https://compras.vidadepai.com.br/?lang=es" />
+  <link rel="alternate" hreflang="zh-CN" href="https://compras.vidadepai.com.br/?lang=zh" />
+  <link rel="alternate" hreflang="x-default" href="https://compras.vidadepai.com.br/" />
+
+  <!-- Ícones e PWA Manifest -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Open Graph (WhatsApp, Facebook, LinkedIn, Telegram) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Lista de Compras • Vida de Pai" />
+  <meta property="og:url" id="og-url" content="https://compras.vidadepai.com.br/" />
+  <meta property="og:title" id="og-title" content="Lista de Compras de Supermercado Online Grátis | Compare Preços" />
+  <meta property="og:description" id="og-description" content="Monte sua lista do mês em segundos, compare preços com o mês anterior, calcule o carrinho em tempo real e compartilhe o link no WhatsApp." />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:locale:alternate" content="es_ES" />
+  <meta property="og:locale:alternate" content="zh_CN" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" id="twitter-title" content="Lista de Compras de Supermercado Online Grátis" />
+  <meta name="twitter:description" id="twitter-description" content="Organize sua compra do mês, compare preços mês a mês, calcule o carrinho em tempo real e compartilhe com a família." />
+
+  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Dados Estruturados Schema.org (JSON-LD) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Lista de Compras de Supermercado Online",
+          "alternateName": ["Shopping List", "Lista de Compras", "智能购物清单"],
+          "url": "https://compras.vidadepai.com.br/",
+          "applicationCategory": "LifestyleApplication",
+          "operatingSystem": "Web, Android, iOS, macOS, Windows",
+          "inLanguage": ["pt-BR", "en", "es", "zh-CN"],
+          "isAccessibleForFree": true,
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "BRL"
+          },
+          "description": "Aplicação web gratuita para criar listas de compras de supermercado organizadas por mês e categoria, comparar preços mês a mês, calcular o total do carrinho em tempo real e compartilhar via link.",
+          "featureList": [
+            "Comparativo automático de preços mês a mês",
+            "Compartilhamento de lista em tempo real por link (WhatsApp)",
+            "Importação da lista do mês anterior com 1 clique",
+            "Cálculo automático de itens pendentes e no carrinho",
+            "Gráfico de gastos por categoria de supermercado",
+            "Catálogo pronto por corredores em 4 idiomas (Português, Inglês, Espanhol e Chinês)"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "A ferramenta de Lista de Compras é gratuita?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sim, é 100% gratuita, sem anúncios e funciona direto no navegador do celular ou computador."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Preciso criar conta para montar minha lista de supermercado?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Não. Você pode clicar em 'Começar agora sem cadastro' para salvar tudo localmente no seu navegador, ou entrar com sua conta Google se quiser sincronizar na nuvem e compartilhar com a família."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Como funciona o comparativo de preços mês a mês?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sempre que você registra o preço de um produto em um mês, nos meses seguintes o sistema mostra automaticamente quanto você pagou da última vez e calcula se o item subiu ou baixou."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Como compartilhar a lista de compras no WhatsApp?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Basta clicar no botão 'Compartilhar Lista' no topo do mês para copiar o link único e enviar no WhatsApp. Outra pessoa pode abrir o link e marcar os produtos no carrinho em tempo real."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  </script>
+
   <script>
     (function () {
       try {
@@ -22,7 +130,15 @@
   </script>
 </head>
 <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-zinc-100 dark:selection:text-zinc-900 transition-colors duration-200">
-  <div id="root"></div>
+  <div id="root">
+    <noscript>
+      <main style="max-width: 720px; margin: 2rem auto; padding: 1rem; font-family: sans-serif;">
+        <h1>Lista de Compras de Supermercado Online Grátis</h1>
+        <p>Organize suas compras do mês por categoria, compare preços com o mês anterior, calcule o valor total do carrinho em tempo real e compartilhe sua lista pelo WhatsApp.</p>
+        <p>Available in English, Español, Português (BR), and 中文 (普通话).</p>
+      </main>
+    </noscript>
+  </div>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>

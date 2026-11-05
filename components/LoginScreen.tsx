@@ -36,6 +36,12 @@ interface LoginCopy {
     description: string;
     badge: string;
   }[];
+  faqTitle: string;
+  faqSubtitle: string;
+  faqs: {
+    question: string;
+    answer: string;
+  }[];
   footerTitle: string;
   footerDescription: string;
   footerGoogleBtn: string;
@@ -92,6 +98,30 @@ const LOGIN_COPY: Record<Language, LoginCopy> = {
         description:
           'Acompanhe o valor exato do que já está no carrinho, o que falta pegar e o gráfico de gastos por categoria (Açougue, Limpeza, Hortifrúti).',
         badge: 'Controle total',
+      },
+    ],
+    faqTitle: 'Perguntas Frequentes',
+    faqSubtitle: 'Tire suas dúvidas sobre a ferramenta de lista de supermercado',
+    faqs: [
+      {
+        question: 'A ferramenta de Lista de Compras é gratuita?',
+        answer:
+          'Sim! É 100% gratuita, sem anúncios e funciona direto no navegador do seu celular ou computador, sem precisar instalar aplicativo.',
+      },
+      {
+        question: 'Preciso criar conta para montar minha lista de supermercado?',
+        answer:
+          'Não. Você pode clicar em "Começar agora sem cadastro" para salvar tudo localmente no seu navegador, ou entrar com sua conta Google se quiser sincronizar na nuvem e compartilhar com a família.',
+      },
+      {
+        question: 'Como funciona o comparativo de preços mês a mês?',
+        answer:
+          'Sempre que você anota o preço de um produto na compra do mês, nos meses seguintes o sistema mostra automaticamente quanto você pagou da última vez e calcula em reais e percentual se o item subiu ou caiu.',
+      },
+      {
+        question: 'Como compartilhar a lista de compras no WhatsApp?',
+        answer:
+          'No topo da sua lista mensal, basta clicar no botão "Compartilhar Lista" para copiar o link único e enviar no WhatsApp. Quem abrir o link vê os itens e pode marcar o que já colocou no carrinho em tempo real.',
       },
     ],
     footerTitle: 'Pronto para organizar a compra deste mês?',
@@ -151,6 +181,30 @@ const LOGIN_COPY: Record<Language, LoginCopy> = {
         badge: 'Full control',
       },
     ],
+    faqTitle: 'Frequently Asked Questions',
+    faqSubtitle: 'Everything you need to know about our grocery list tool',
+    faqs: [
+      {
+        question: 'Is this Grocery Shopping List tool completely free?',
+        answer:
+          'Yes! It is 100% free, ad-free, and works directly in your phone or computer browser without installing any app.',
+      },
+      {
+        question: 'Do I need an account to create a shopping list?',
+        answer:
+          'No. You can click "Start now without account" to save your lists locally in your browser, or sign in with Google if you want cloud sync and real-time link sharing.',
+      },
+      {
+        question: 'How does the month-over-month price comparison work?',
+        answer:
+          'Whenever you enter an item’s price in a monthly list, future months automatically display the last price you paid and calculate the exact dollar and percentage difference.',
+      },
+      {
+        question: 'How do I share my grocery list with family?',
+        answer:
+          'Click the "Share List" button at the top of your monthly list to copy its unique URL and send it via WhatsApp, iMessage, or Telegram so others can check off items in real time.',
+      },
+    ],
     footerTitle: 'Ready to organize this month’s groceries?',
     footerDescription:
       'Pick items from our ready-made aisle catalog or create your own custom list in seconds.',
@@ -208,6 +262,30 @@ const LOGIN_COPY: Record<Language, LoginCopy> = {
         badge: 'Control total',
       },
     ],
+    faqTitle: 'Preguntas Frecuentes',
+    faqSubtitle: 'Resuelve tus dudas sobre la herramienta de lista de supermercado',
+    faqs: [
+      {
+        question: '¿La herramienta de Lista de Compras es gratuita?',
+        answer:
+          '¡Sí! Es 100% gratuita, sin anuncios y funciona directamente en el navegador de tu móvil u ordenador sin instalar aplicaciones.',
+      },
+      {
+        question: '¿Necesito crear una cuenta para armar mi lista?',
+        answer:
+          'No. Puedes pulsar "Empezar ahora sin registro" para guardar todo en tu navegador, o iniciar sesión con Google para sincronizar en la nube y compartir con tu familia.',
+      },
+      {
+        question: '¿Cómo funciona la comparación de precios mes a mes?',
+        answer:
+          'Cada vez que registras el precio de un producto en el mes, en los meses siguientes el sistema muestra automáticamente cuánto pagaste la última vez y calcula si subió o bajó.',
+      },
+      {
+        question: '¿Cómo compartir la lista de compras por WhatsApp?',
+        answer:
+          'Solo pulsa el botón "Compartir Lista" en la barra del mes para copiar el enlace único y enviarlo por WhatsApp. Tu familia podrá abrirlo y marcar productos en tiempo real.',
+      },
+    ],
     footerTitle: '¿Listo para organizar la compra de este mes?',
     footerDescription:
       'Elige productos del catálogo listo por pasillos o crea tu propia lista personalizada en segundos.',
@@ -263,6 +341,30 @@ const LOGIN_COPY: Record<Language, LoginCopy> = {
         description:
           '实时统计已放入购物车与待购商品的金额，并自动生成各品类消费占比图表。',
         badge: '预算可控',
+      },
+    ],
+    faqTitle: '常见问题解答 (FAQ)',
+    faqSubtitle: '了解关于在线智能购物清单的更多信息',
+    faqs: [
+      {
+        question: '这款超市购物清单工具完全免费吗？',
+        answer:
+          '是的！100% 免费且无任何广告，直接在手机或电脑浏览器中打开即可使用，无需下载安装应用。',
+      },
+      {
+        question: '必须注册或登录账号才能使用吗？',
+        answer:
+          '不需要。您可以点击“免注册立即开始使用”将数据保存在本地浏览器中；也可以使用 Google 账号登录以开启跨设备云端同步和多人实时共享。',
+      },
+      {
+        question: '跨月历史价格对比是如何工作的？',
+        answer:
+          '当您在某个月份记录了商品单价后，后续月份添加同名商品时会自动显示上次购买的价格，并在您输入新价格时自动计算涨跌幅。',
+      },
+      {
+        question: '如何与家人实时共享同一个购物清单？',
+        answer:
+          '只需点击月份栏右侧的“共享清单”按钮即可复制专属链接并发送给家人，双方在超市可同时勾选商品并实时看到更新。',
       },
     ],
     footerTitle: '准备好规划本月的采购清单了吗？',
@@ -539,7 +641,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {t.advantages.map((item, idx) => (
-            <div
+            <article
               key={item.title}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-2xs flex flex-col justify-between gap-3"
             >
@@ -559,7 +661,41 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   {item.description}
                 </p>
               </div>
-            </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Seção de FAQ para SEO */}
+      <section aria-labelledby="faq-heading" className="space-y-4">
+        <div>
+          <h3
+            id="faq-heading"
+            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+          >
+            {t.faqTitle}
+          </h3>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            {t.faqSubtitle}
+          </p>
+        </div>
+
+        <div className="space-y-2.5">
+          {t.faqs.map((faq) => (
+            <details
+              key={faq.question}
+              className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-3.5 shadow-2xs"
+            >
+              <summary className="flex items-center justify-between gap-3 cursor-pointer list-none text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                <span>{faq.question}</span>
+                <span className="text-zinc-400 group-open:rotate-180 transition-transform flex-shrink-0">
+                  ▼
+                </span>
+              </summary>
+              <p className="mt-2.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                {faq.answer}
+              </p>
+            </details>
           ))}
         </div>
       </section>

@@ -8,6 +8,29 @@ export const LANGUAGE_OPTIONS: { code: Language; label: string; shortLabel: stri
   { code: 'zh', label: '中文 (普通话)', shortLabel: '中文', flag: '🇨🇳' },
 ];
 
+const SEO_META: Record<Language, { title: string; description: string }> = {
+  pt: {
+    title: 'Lista de Compras de Supermercado Online Grátis | Compare Preços e Compartilhe',
+    description:
+      'Organize sua lista de compras de supermercado online grátis. Compare preços mês a mês, some o total do carrinho em tempo real, filtre por categorias e compartilhe no WhatsApp.',
+  },
+  en: {
+    title: 'Free Online Grocery Shopping List | Compare Prices & Share in Real Time',
+    description:
+      'Build your monthly grocery shopping list in seconds. Compare prices month over month, track your cart total in real time, browse by aisle category, and share with family.',
+  },
+  es: {
+    title: 'Lista de Compras de Supermercado Online Gratis | Compara Precios y Comparte',
+    description:
+      'Organiza tu lista de compras del supermercado online gratis. Compara precios mes a mes, calcula el total del carrito en tiempo real, filtra por pasillos y comparte por WhatsApp.',
+  },
+  zh: {
+    title: '免费在线超市购物清单 | 跨月比价、分类规划与家人实时共享',
+    description:
+      '几秒钟创建每月超市采购清单。支持跨月历史价格对比、实时统计购物车总金额、按商品分类选购，并通过链接与家人实时协同共享。',
+  },
+};
+
 const SHORT_MONTHS: Record<Language, string[]> = {
   pt: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
   en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -34,6 +57,28 @@ const FULL_MONTHS: Record<Language, string[]> = {
   ],
 };
 
+const isValidLanguage = (val: string | null): val is Language =>
+  val === 'pt' || val === 'en' || val === 'es' || val === 'zh';
+
+const detectInitialLanguage = (): Language => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const urlLang = params.get('lang');
+    if (isValidLanguage(urlLang)) return urlLang;
+
+    const saved = localStorage.getItem('language');
+    if (isValidLanguage(saved)) return saved;
+
+    const browserLang = navigator.language.toLowerCase();
+    if (browserLang.startsWith('zh')) return 'zh';
+    if (browserLang.startsWith('es')) return 'es';
+    if (browserLang.startsWith('en')) return 'en';
+  } catch {
+    // ignore errors
+  }
+  return 'pt';
+};
+
 interface LanguageContextValue {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -47,17 +92,7 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem('language');
-      if (saved === 'en' || saved === 'pt' || saved === 'es' || saved === 'zh') {
-        return saved;
-      }
-    } catch {
-      // ignore storage errors
-    }
-    return 'pt';
-  });
+  const [language, setLanguageState] = useState<Language>(detectInitialLanguage);
 
   useEffect(() => {
     const htmlLangMap: Record<Language, string> = {
@@ -67,6 +102,26 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       zh: 'zh-CN',
     };
     document.documentElement.lang = htmlLangMap[language];
+
+    // Atualiza título e meta tags de SEO dinamicamente conforme o idioma
+    const meta = SEO_META[language];
+    document.title = meta.title;
+
+    const descEl = document.querySelector('meta[name="description"]');
+    if (descEl) descEl.setAttribute('content', meta.description);
+
+    const ogTitleEl = document.getElementById('og-title');
+    if (ogTitleEl) ogTitleEl.setAttribute('content', meta.title);
+
+    const ogDescEl = document.getElementById('og-description');
+    if (ogDescEl) ogDescEl.setAttribute('content', meta.description);
+
+    const twTitleEl = document.getElementById('twitter-title');
+    if (twTitleEl) twTitleEl.setAttribute('content', meta.title);
+
+    const twDescEl = document.getElementById('twitter-description');
+    if (twDescEl) twDescEl.setAttribute('content', meta.description);
+
     try {
       localStorage.setItem('language', language);
     } catch {
@@ -76,6 +131,16 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
+    try {
+      const url = new URL(window.location.href);
+      if (lang === 'pt' && !url.searchParams.has('lang')) {
+        return;
+      }
+      url.searchParams.set('lang', lang);
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore URL errors
+    }
   }, []);
 
   const formatCurrency = useCallback(
