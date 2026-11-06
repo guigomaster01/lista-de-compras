@@ -79,6 +79,53 @@ const generateUniqueShareId = (): string => {
   return Array.from(randomValues, (v) => chars[v % chars.length]).join('');
 };
 
+const sanitizeListForFirestore = (
+  list: MonthlyShoppingList,
+  user: AuthUserDisplay | null,
+  fallbackName: string
+): MonthlyShoppingList => {
+  const isRealUser = Boolean(user && user.uid !== 'local-demo-user');
+  const resolvedOwnerId =
+    isRealUser && (!list.ownerId || list.ownerId === 'local-demo-user')
+      ? user!.uid
+      : list.ownerId || user?.uid || 'local-demo-user';
+
+  const resolvedOwnerName =
+    isRealUser &&
+    (!list.ownerName ||
+      list.ownerName === 'Conta Local' ||
+      list.ownerName === 'Local Account' ||
+      list.ownerName === 'Cuenta Local' ||
+      list.ownerName === '本地账户')
+      ? user!.displayName || user!.email || fallbackName
+      : list.ownerName || user?.displayName || fallbackName;
+
+  const cleanItems: ShoppingItem[] = (list.items || []).map((item) => {
+    const clean: ShoppingItem = {
+      id: item.id,
+      name: item.name,
+      completed: Boolean(item.completed),
+      quantity: item.quantity,
+      price: item.price,
+    };
+    if (item.category) {
+      clean.category = item.category;
+    }
+    return clean;
+  });
+
+  return {
+    id: list.id,
+    ownerId: resolvedOwnerId,
+    ownerName: resolvedOwnerName,
+    ownerPhoto: list.ownerPhoto ?? user?.photoURL ?? null,
+    monthKey: list.monthKey,
+    items: cleanItems,
+    createdAt: list.createdAt || new Date().toISOString(),
+    updatedAt: list.updatedAt || new Date().toISOString(),
+  };
+};
+
 const AppContent: React.FC = () => {
   const { language } = useLanguage();
   const t = APP_COPY[language];
@@ -158,14 +205,34 @@ const AppContent: React.FC = () => {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const nextLists: Record<string, MonthlyShoppingList> = {};
+        const remoteLists: Record<string, MonthlyShoppingList> = {};
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as MonthlyShoppingList;
           if (data.monthKey) {
-            nextLists[data.monthKey] = data;
+            remoteLists[data.monthKey] = data;
           }
         });
-        setMonthlyLists((prev) => ({ ...prev, ...nextLists }));
+
+        setMonthlyLists((prev) => {
+          const merged = { ...prev, ...remoteLists };
+          // Sobe automaticamente para o Firestore qualquer lista local que ainda não esteja na nuvem
+          for (const [mKey, localList] of Object.entries(prev)) {
+            if (!remoteLists[mKey] && localList && localList.items?.length > 0) {
+              const sanitized = sanitizeListForFirestore(
+                localList,
+                user,
+                t.userFallback
+              );
+              merged[mKey] = sanitized;
+              void setDoc(doc(db, 'shoppingLists', sanitized.id), sanitized).catch(
+                (err) => {
+                  console.error('Erro ao sincronizar lista local para o Firestore:', err);
+                }
+              );
+            }
+          }
+          return merged;
+        });
       },
       (err) => {
         console.error('Erro ao buscar listas do Firestore:', err);
@@ -173,7 +240,7 @@ const AppContent: React.FC = () => {
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, t.userFallback]);
 
   // Se houver ?lista=<shareId> na URL, escuta esse documento específico em tempo real
   useEffect(() => {
@@ -182,11 +249,14 @@ const AppContent: React.FC = () => {
       return;
     }
 
+    const foundLocal = (Object.values(monthlyLists) as MonthlyShoppingList[]).find(
+      (list) => list.id === sharedListIdParam
+    );
+    if (foundLocal) {
+      setSharedListDoc(foundLocal);
+    }
+
     if (!db) {
-      const foundLocal = (Object.values(monthlyLists) as MonthlyShoppingList[]).find(
-        (list) => list.id === sharedListIdParam
-      );
-      if (foundLocal) setSharedListDoc(foundLocal);
       return;
     }
 
@@ -295,27 +365,30 @@ const AppContent: React.FC = () => {
 
   const persistList = useCallback(
     async (updatedItems: ShoppingItem[]) => {
-      const updatedList: MonthlyShoppingList = {
+      const rawUpdated: MonthlyShoppingList = {
         ...activeList,
-        ownerId: activeList.ownerId || user?.uid || 'local-demo-user',
-        ownerName:
-          activeList.ownerName || user?.displayName || t.userFallback,
         items: updatedItems,
         updatedAt: new Date().toISOString(),
       };
 
+      const sanitized = sanitizeListForFirestore(
+        rawUpdated,
+        user,
+        t.userFallback
+      );
+
       if (sharedListIdParam && sharedListDoc) {
-        setSharedListDoc(updatedList);
+        setSharedListDoc(sanitized);
       } else {
         setMonthlyLists((prev) => ({
           ...prev,
-          [updatedList.monthKey]: updatedList,
+          [sanitized.monthKey]: sanitized,
         }));
       }
 
       if (db && user && user.uid !== 'local-demo-user') {
         try {
-          await setDoc(doc(db, 'shoppingLists', updatedList.id), updatedList);
+          await setDoc(doc(db, 'shoppingLists', sanitized.id), sanitized);
         } catch (err) {
           console.error('Erro ao salvar lista no Firestore:', err);
         }
@@ -324,12 +397,20 @@ const AppContent: React.FC = () => {
     [activeList, sharedListIdParam, sharedListDoc, user, t.userFallback]
   );
 
+  const handleEnsureActiveListSynced = useCallback(() => {
+    if (!db || !user || user.uid === 'local-demo-user') return;
+    const sanitized = sanitizeListForFirestore(activeList, user, t.userFallback);
+    void setDoc(doc(db, 'shoppingLists', sanitized.id), sanitized).catch((err) => {
+      console.error('Erro ao sincronizar lista compartilhada no Firestore:', err);
+    });
+  }, [activeList, user, t.userFallback]);
+
   const handleImportPreviousMonth = () => {
     if (!latestPriorList) return;
     const importedItems: ShoppingItem[] = latestPriorList.items.map((item, idx) => ({
       id: Date.now() + idx + Math.floor(Math.random() * 1000),
       name: item.name,
-      category: item.category,
+      ...(item.category ? { category: item.category } : {}),
       quantity: item.quantity,
       price: 0, // Zera o preço para a pessoa digitar no mercado e ver o comparativo
       completed: false,
@@ -394,7 +475,7 @@ const AppContent: React.FC = () => {
       completed: false,
       quantity,
       price,
-      category,
+      ...(category ? { category } : {}),
     };
     void persistList([...items, newItem]);
   };
@@ -529,6 +610,7 @@ const AppContent: React.FC = () => {
                   sharedOwnerName={sharedListDoc?.ownerName}
                   onExitSharedView={handleExitSharedView}
                   isSyncedCloud={isSyncedCloud}
+                  onShareList={handleEnsureActiveListSynced}
                 />
               </div>
             )}

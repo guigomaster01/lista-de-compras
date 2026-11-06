@@ -11,6 +11,7 @@ interface MonthlyBarProps {
   sharedOwnerName?: string;
   onExitSharedView: () => void;
   isSyncedCloud: boolean;
+  onShareList?: () => void;
 }
 
 const shiftMonth = (monthKey: string, delta: number): string => {
@@ -87,6 +88,7 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
   isSharedView,
   sharedOwnerName,
   onExitSharedView,
+  onShareList,
 }) => {
   const [copied, setCopied] = useState(false);
   const { language, formatMonthLabel } = useLanguage();
@@ -95,6 +97,9 @@ export const MonthlyBar: React.FC<MonthlyBarProps> = ({
   const shareUrl = `${window.location.origin}${window.location.pathname}?lista=${shareId}`;
 
   const handleCopyShareLink = () => {
+    if (onShareList) {
+      onShareList();
+    }
     if (!navigator.clipboard) return;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
