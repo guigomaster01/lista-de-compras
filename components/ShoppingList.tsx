@@ -323,7 +323,7 @@ const ShoppingListItem: React.FC<{
       </label>
 
       <div className="flex items-center justify-between sm:justify-end gap-2 pl-7 sm:pl-0 flex-shrink-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="flex items-center">
             <label htmlFor={`qty-${item.id}`} className="sr-only">
               {t.qtyOf(item.name)}
@@ -337,7 +337,7 @@ const ShoppingListItem: React.FC<{
               min="1"
               value={item.quantity}
               onChange={(e) => handleQuantityChange(e.target.value)}
-              className="w-14 h-8 px-2 text-xs text-center font-medium text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 tabular-nums"
+              className="w-14 h-9 sm:h-8 px-1.5 text-base sm:text-xs text-center font-medium text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 tabular-nums"
             />
           </div>
 
@@ -357,7 +357,7 @@ const ShoppingListItem: React.FC<{
               onFocus={() => setIsEditingPrice(true)}
               onBlur={() => setIsEditingPrice(false)}
               onChange={(e) => handlePriceChange(e.target.value)}
-              className="w-24 h-8 pl-7 pr-2 text-xs font-medium text-right text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 tabular-nums"
+              className="w-28 sm:w-24 h-9 sm:h-8 pl-7 pr-2 text-base sm:text-xs font-medium text-right text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 tabular-nums"
             />
           </div>
         </div>

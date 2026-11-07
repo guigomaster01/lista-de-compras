@@ -145,7 +145,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
             value={itemName}
             onChange={(e) => setItemName(e.target.value)}
             placeholder={t.placeholderItem}
-            className="w-full h-9 px-3 text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+            className="w-full h-10 sm:h-9 px-3 text-base sm:text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
           />
         </div>
 
@@ -160,7 +160,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
             id="item-category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full h-9 px-2.5 text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
+            className="w-full h-10 sm:h-9 px-2.5 text-base sm:text-xs text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors"
           >
             <option value="">{t.uncategorized}</option>
             {categoryOptions.map((cat) => (
@@ -185,7 +185,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               min="1"
-              className="w-full h-9 px-2.5 text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors tabular-nums"
+              className="w-full h-10 sm:h-9 px-2.5 text-base sm:text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors tabular-nums"
             />
           </div>
 
@@ -207,7 +207,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder={t.pricePlaceholder}
                 inputMode="decimal"
-                className="w-full h-9 pl-7 pr-2 text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors tabular-nums"
+                className="w-full h-10 sm:h-9 pl-7 pr-2 text-base sm:text-sm text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors tabular-nums"
               />
             </div>
           </div>
@@ -217,7 +217,7 @@ export const AddItemForm: React.FC<AddItemFormProps> = ({
           <button
             type="submit"
             disabled={!itemName.trim()}
-            className="w-full h-9 px-3 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full h-10 sm:h-9 px-3 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white dark:text-zinc-900 bg-zinc-900 dark:bg-zinc-100 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             <PlusIcon className="w-4 h-4" />
             <span>{t.addBtn}</span>
