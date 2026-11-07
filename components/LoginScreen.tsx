@@ -2,6 +2,7 @@ import React from 'react';
 import { isFirebaseConfigured } from '../lib/firebase';
 import { useLanguage, LANGUAGE_OPTIONS } from '../lib/i18n';
 import type { Language } from '../types';
+import { ProductIcon } from './icons/ProductIcon';
 
 interface LoginScreenProps {
   onGoogleLogin: () => void;
@@ -580,10 +581,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
           <div className="rounded-xl bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200/80 dark:border-zinc-800 p-3.5 sm:p-4 space-y-2.5">
             <div className="flex items-center justify-between gap-2 bg-white dark:bg-zinc-900 px-3.5 py-2.5 rounded-lg border border-zinc-200/70 dark:border-zinc-800">
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <span className="w-4 h-4 rounded border border-emerald-500 bg-emerald-500 text-white flex items-center justify-center text-[10px] flex-shrink-0">
                   ✓
                 </span>
+                <ProductIcon
+                  name={t.previewItem1Name}
+                  category={t.previewItem1Cat}
+                  size="md"
+                  variant="badge"
+                />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">
@@ -604,8 +611,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             </div>
 
             <div className="flex items-center justify-between gap-2 bg-white dark:bg-zinc-900 px-3.5 py-2.5 rounded-lg border border-zinc-200/70 dark:border-zinc-800">
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <span className="w-4 h-4 rounded border border-zinc-300 dark:border-zinc-700 flex-shrink-0" />
+                <ProductIcon
+                  name={t.previewItem2Name}
+                  category={t.previewItem2Cat}
+                  size="md"
+                  variant="badge"
+                />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100">

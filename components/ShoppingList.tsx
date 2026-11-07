@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { ShoppingItem, PreviousPriceInfo, Language } from '../types';
 import { TrashIcon } from './icons/TrashIcon';
+import { ProductIcon } from './icons/ProductIcon';
 import { CategoryPieChart } from './CategoryPieChart';
 import { useLanguage } from '../lib/i18n';
 
@@ -10,7 +11,7 @@ interface ShoppingListProps {
   items: ShoppingItem[];
   previousPrices: Record<string, PreviousPriceInfo>;
   hasPreviousMonthItems: boolean;
-  onImportPreviousMonth: () => void;
+  onOpenImportModal: () => void;
   onToggleItem: (id: number) => void;
   onUpdateItem: (id: number, quantity: number, price: number) => void;
   onRemoveItem: (id: number) => void;
@@ -47,6 +48,7 @@ const LIST_COPY: Record<
     sortCategory: string;
     sortDefault: string;
     sortName: string;
+    importPreviousShort: string;
     plusCategories: string;
     clearList: string;
   }
@@ -64,9 +66,9 @@ const LIST_COPY: Record<
     removeAria: (name) => `Remover ${name}`,
     emptyTitle: 'Sua lista de compras deste mês está vazia',
     emptyDesc:
-      'Escolha produtos prontos na aba de categorias, importe os produtos do mês anterior ou adicione um item avulso acima.',
+    'Escolha produtos prontos na aba de categorias, importe produtos do mês anterior ou adicione um item avulso acima.',
     buildByCategories: 'Montar lista por Categorias',
-    repeatLastMonth: 'Repetir itens do mês anterior',
+    repeatLastMonth: 'Importar itens do mês anterior',
     remainingPending: 'Falta pegar (Pendente)',
     inCartChecked: 'No carrinho (Marcados)',
     totalPurchase: 'Total da compra',
@@ -74,6 +76,7 @@ const LIST_COPY: Record<
     sortCategory: 'Por Categoria',
     sortDefault: 'Ordem de inclusão',
     sortName: 'Alfabética (A-Z)',
+    importPreviousShort: 'Importar mês anterior',
     plusCategories: '+ Categorias',
     clearList: 'Limpar lista',
   },
@@ -90,9 +93,9 @@ const LIST_COPY: Record<
     removeAria: (name) => `Remove ${name}`,
     emptyTitle: 'Your shopping list for this month is empty',
     emptyDesc:
-      'Pick ready-made items from the Categories tab, import last month’s items, or add a custom item above.',
+    'Pick ready-made items from the Categories tab, import items from a previous month, or add a custom item above.',
     buildByCategories: 'Build list by Categories',
-    repeatLastMonth: 'Repeat last month’s items',
+    repeatLastMonth: 'Import from previous month',
     remainingPending: 'Remaining (Pending)',
     inCartChecked: 'In cart (Checked)',
     totalPurchase: 'Total purchase',
@@ -100,6 +103,7 @@ const LIST_COPY: Record<
     sortCategory: 'By Category',
     sortDefault: 'Date Added',
     sortName: 'Alphabetical (A-Z)',
+    importPreviousShort: 'Import previous month',
     plusCategories: '+ Categories',
     clearList: 'Clear list',
   },
@@ -116,9 +120,9 @@ const LIST_COPY: Record<
     removeAria: (name) => `Eliminar ${name}`,
     emptyTitle: 'Tu lista de compras de este mes está vacía',
     emptyDesc:
-      'Elige productos listos en la pestaña de categorías, importa los productos del mes anterior o añade un artículo arriba.',
+    'Elige productos listos en la pestaña de categorías, importa productos del mes anterior o añade un artículo arriba.',
     buildByCategories: 'Armar lista por Categorías',
-    repeatLastMonth: 'Repetir productos del mes anterior',
+    repeatLastMonth: 'Importar del mes anterior',
     remainingPending: 'Por comprar (Pendiente)',
     inCartChecked: 'En el carrito (Marcados)',
     totalPurchase: 'Total de la compra',
@@ -126,6 +130,7 @@ const LIST_COPY: Record<
     sortCategory: 'Por Categoría',
     sortDefault: 'Orden de inclusión',
     sortName: 'Alfabético (A-Z)',
+    importPreviousShort: 'Importar mes anterior',
     plusCategories: '+ Categorías',
     clearList: 'Vaciar lista',
   },
@@ -142,9 +147,9 @@ const LIST_COPY: Record<
     removeAria: (name) => `移除 ${name}`,
     emptyTitle: '您本月的购物清单为空',
     emptyDesc:
-      '可在“分类目录”中快速勾选常用商品、一键导入上月商品，或在上方添加自定义商品。',
+    '可在“分类目录”中快速勾选常用商品、从上月清单中选择导入，或在上方添加自定义商品。',
     buildByCategories: '按分类目录选购',
-    repeatLastMonth: '复用上月商品',
+    repeatLastMonth: '从历史清单导入商品',
     remainingPending: '待购合计（未勾选）',
     inCartChecked: '购物车内（已勾选）',
     totalPurchase: '预计总金额',
@@ -152,6 +157,7 @@ const LIST_COPY: Record<
     sortCategory: '按商品分类',
     sortDefault: '按添加顺序',
     sortName: '按名称排序 (A-Z)',
+    importPreviousShort: '导入上月商品',
     plusCategories: '+ 分类目录',
     clearList: '清空清单',
   },
@@ -270,8 +276,8 @@ const ShoppingListItem: React.FC<{
     <li
       className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-zinc-900 hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors ${animationClass}`}
     >
-      <label className="flex items-start sm:items-center gap-3.5 flex-grow cursor-pointer select-none min-w-0">
-        <span className="relative flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
+      <label className="flex items-start sm:items-center gap-3 flex-grow cursor-pointer select-none min-w-0">
+        <span className="relative flex items-center justify-center flex-shrink-0 mt-1 sm:mt-0">
           <input
             type="checkbox"
             checked={item.completed}
@@ -293,14 +299,21 @@ const ShoppingListItem: React.FC<{
           </span>
         </span>
 
+        <ProductIcon
+          name={item.name}
+          category={item.category}
+          size="md"
+          variant="badge"
+          className={item.completed ? 'opacity-50 grayscale' : ''}
+        />
+
         <div className="min-w-0 flex-grow">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className={`text-sm font-medium transition-colors ${
-                item.completed
+              className={`text-sm font-medium transition-colors ${item.completed
                   ? 'line-through text-zinc-400 dark:text-zinc-500'
                   : 'text-zinc-900 dark:text-zinc-100'
-              }`}
+                }`}
             >
               {item.name}
             </span>
@@ -364,11 +377,10 @@ const ShoppingListItem: React.FC<{
 
         <div className="w-20 text-right hidden md:block">
           <span
-            className={`text-xs font-semibold tabular-nums ${
-              item.completed
+            className={`text-xs font-semibold tabular-nums ${item.completed
                 ? 'text-zinc-400 dark:text-zinc-600 line-through'
                 : 'text-zinc-900 dark:text-zinc-100'
-            }`}
+              }`}
           >
             {formatCurrency(subtotal)}
           </span>
@@ -391,7 +403,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
   items,
   previousPrices,
   hasPreviousMonthItems,
-  onImportPreviousMonth,
+  onOpenImportModal,
   onToggleItem,
   onUpdateItem,
   onRemoveItem,
@@ -428,7 +440,7 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
           {hasPreviousMonthItems && (
             <button
               type="button"
-              onClick={onImportPreviousMonth}
+              onClick={onOpenImportModal}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200/80 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
             >
               <span>{t.repeatLastMonth}</span>
@@ -491,42 +503,51 @@ export const ShoppingList: React.FC<ShoppingListProps> = ({
             </select>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={onGoToCategories}
-              className="text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-            >
-              {t.plusCategories}
-            </button>
-            {items.length > 0 && (
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+              {hasPreviousMonthItems && (
+                <button
+                  type="button"
+                  onClick={onOpenImportModal}
+                  className="text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+                >
+                  {t.importPreviousShort}
+                </button>
+              )}
               <button
                 type="button"
-                onClick={onClearList}
-                className="text-xs font-medium text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 transition-colors cursor-pointer"
+                onClick={onGoToCategories}
+                className="text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
               >
-                {t.clearList}
+                {t.plusCategories}
               </button>
-            )}
+              {items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onClearList}
+                  className="text-xs font-medium text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 transition-colors cursor-pointer"
+                >
+                  {t.clearList}
+                </button>
+              )}
+            </div>
           </div>
+
+          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            {items.map((item) => (
+              <ShoppingListItem
+                key={item.id}
+                item={item}
+                prevInfo={previousPrices[item.name.trim().toLowerCase()]}
+                onToggle={onToggleItem}
+                onUpdate={onUpdateItem}
+                onRemove={onRemoveItem}
+                isExiting={exitingItemIds.includes(item.id)}
+              />
+            ))}
+          </ul>
         </div>
 
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {items.map((item) => (
-            <ShoppingListItem
-              key={item.id}
-              item={item}
-              prevInfo={previousPrices[item.name.trim().toLowerCase()]}
-              onToggle={onToggleItem}
-              onUpdate={onUpdateItem}
-              onRemove={onRemoveItem}
-              isExiting={exitingItemIds.includes(item.id)}
-            />
-          ))}
-        </ul>
+        <CategoryPieChart items={items} />
       </div>
-
-      <CategoryPieChart items={items} />
-    </div>
-  );
+      );
 };

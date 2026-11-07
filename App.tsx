@@ -16,6 +16,7 @@ import { auth, db, googleProvider, isFirebaseConfigured } from './lib/firebase';
 import { LanguageProvider, useLanguage } from './lib/i18n';
 import { AddItemForm } from './components/AddItemForm';
 import { Header, type AuthUserDisplay } from './components/Header';
+import { ImportPreviousModal } from './components/ImportPreviousModal';
 import { LoginScreen } from './components/LoginScreen';
 import { MonthlyBar } from './components/MonthlyBar';
 import { ShoppingList, type SortOption } from './components/ShoppingList';
@@ -170,6 +171,7 @@ const AppContent: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortOption>('category');
   const [page, setPage] = useState<PageType>('list');
   const [exitingItemIds, setExitingItemIds] = useState<number[]>([]);
+  const [isImportModalOpen, setIsImportModalOpen] = useState<boolean>(false);
 
   // Observa autenticação do Firebase
   useEffect(() => {
@@ -333,34 +335,34 @@ const AppContent: React.FC = () => {
   }, [user, monthKey, sharedListIdParam, monthlyLists, activeList]);
 
   // Mapa com o último preço pago por produto em meses anteriores ao mês ativo
-  const { previousPrices, latestPriorList } = useMemo(() => {
+  const { previousPrices, priorListsWithItems } = useMemo(() => {
     const map: Record<string, PreviousPriceInfo> = {};
-    const priorMonthKeys = Object.keys(monthlyLists)
-      .filter((k) => k < activeList.monthKey)
+    const otherMonthKeys = Object.keys(monthlyLists)
+      .filter((k) => k !== activeList.monthKey)
       .sort((a, b) => b.localeCompare(a)); // Mais recente primeiro
 
-    let mostRecentWithItems: MonthlyShoppingList | null = null;
+    const nonEmptyLists: MonthlyShoppingList[] = [];
 
-    for (const mKey of priorMonthKeys) {
+    for (const mKey of otherMonthKeys) {
       const list = monthlyLists[mKey];
-      if (!list || !list.items) continue;
+      if (!list || !list.items || list.items.length === 0) continue;
 
-      if (!mostRecentWithItems && list.items.length > 0) {
-        mostRecentWithItems = list;
-      }
+      nonEmptyLists.push(list);
 
-      for (const item of list.items) {
-        const key = item.name.trim().toLowerCase();
-        if (item.price > 0 && !map[key]) {
-          map[key] = {
-            price: item.price,
-            monthKey: mKey,
-          };
+      if (mKey < activeList.monthKey) {
+        for (const item of list.items) {
+          const key = item.name.trim().toLowerCase();
+          if (item.price > 0 && !map[key]) {
+            map[key] = {
+              price: item.price,
+              monthKey: mKey,
+            };
+          }
         }
       }
     }
 
-    return { previousPrices: map, latestPriorList: mostRecentWithItems };
+    return { previousPrices: map, priorListsWithItems: nonEmptyLists };
   }, [monthlyLists, activeList.monthKey]);
 
   const persistList = useCallback(
@@ -405,17 +407,28 @@ const AppContent: React.FC = () => {
     });
   }, [activeList, user, t.userFallback]);
 
-  const handleImportPreviousMonth = () => {
-    if (!latestPriorList) return;
-    const importedItems: ShoppingItem[] = latestPriorList.items.map((item, idx) => ({
-      id: Date.now() + idx + Math.floor(Math.random() * 1000),
-      name: item.name,
-      ...(item.category ? { category: item.category } : {}),
-      quantity: item.quantity,
-      price: 0, // Zera o preço para a pessoa digitar no mercado e ver o comparativo
-      completed: false,
-    }));
-    void persistList(importedItems);
+  const handleImportItemsFromPrevious = (
+    selectedItems: ShoppingItem[],
+    keepPrices: boolean
+  ) => {
+    if (selectedItems.length === 0) return;
+    const existingNames = new Set(
+      activeList.items.map((i) => i.name.trim().toLowerCase())
+    );
+    const newImportedItems: ShoppingItem[] = selectedItems
+      .filter((item) => !existingNames.has(item.name.trim().toLowerCase()))
+      .map((item, idx) => ({
+        id: Date.now() + idx + Math.floor(Math.random() * 1000),
+        name: item.name,
+        ...(item.category ? { category: item.category } : {}),
+        quantity: item.quantity,
+        price: keepPrices ? item.price : 0,
+        completed: false,
+      }));
+
+    if (newImportedItems.length > 0) {
+      void persistList([...activeList.items, ...newImportedItems]);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -624,8 +637,8 @@ const AppContent: React.FC = () => {
                 <ShoppingList
                   items={sortedItems}
                   previousPrices={previousPrices}
-                  hasPreviousMonthItems={Boolean(latestPriorList)}
-                  onImportPreviousMonth={handleImportPreviousMonth}
+                  hasPreviousMonthItems={priorListsWithItems.length > 0}
+                  onOpenImportModal={() => setIsImportModalOpen(true)}
                   onToggleItem={handleToggleItem}
                   onUpdateItem={handleUpdateItem}
                   onRemoveItem={handleRemoveItem}
@@ -636,6 +649,13 @@ const AppContent: React.FC = () => {
                   completedTotal={completedTotal}
                   exitingItemIds={exitingItemIds}
                   onGoToCategories={() => setPage('categories')}
+                />
+                <ImportPreviousModal
+                  isOpen={isImportModalOpen}
+                  onClose={() => setIsImportModalOpen(false)}
+                  priorLists={priorListsWithItems}
+                  currentItems={items}
+                  onImportItems={handleImportItemsFromPrevious}
                 />
               </div>
             )}
